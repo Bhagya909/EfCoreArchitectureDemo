@@ -14,6 +14,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,9 +27,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Configurations\" />
-    <Folder Include="Persistence\" />
-    <Folder Include="Services\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Persistence\Configurations\Catalog\" />
+    <Folder Include="Persistence\Configurations\Inventory\" />
+    <Folder Include="Persistence\Configurations\Logging\" />
+    <Folder Include="Persistence\Configurations\Orders\" />
+    <Folder Include="Persistence\Migrations\" />
+    <Folder Include="Persistence\Interceptors\" />
+    <Folder Include="Persistence\Seed\" />
+    <Folder Include="Services\Logging\" />
+    <Folder Include="Services\AI\" />
+    <Folder Include="Services\Persistence\" />
   </ItemGroup>
 
 </Project>

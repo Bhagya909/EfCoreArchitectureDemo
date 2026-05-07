@@ -11,9 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Services\" />
+    <Folder Include="DTOs\Inventory\" />
+    <Folder Include="DTOs\Payments\" />
+    <Folder Include="DTOs\Orders\" />
+    <Folder Include="DTOs\Products\" />
+    <Folder Include="Interfaces\Logging\" />
+    <Folder Include="Interfaces\Repositories\" />
+    <Folder Include="Interfaces\Services\" />
+    <Folder Include="Common\" />
+    <Folder Include="Services\Inventory\" />
+    <Folder Include="Services\Logging\" />
+    <Folder Include="Services\Payments\" />
+    <Folder Include="Services\Orders\" />
+    <Folder Include="Services\Products\" />
   </ItemGroup>
 
 </Project>
