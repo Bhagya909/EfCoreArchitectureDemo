@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Enums;
 
-namespace Domain.Enums
+public enum PaymentStatus
 {
-    internal class PaymentStatus
-    {
-    }
+    Pending = 1,
+    Completed = 2,
+    Failed = 3
 }

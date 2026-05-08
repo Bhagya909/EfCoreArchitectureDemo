@@ -1,10 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Enums;
 
-namespace Domain.Entities.Orders
+namespace Domain.Entities.Orders;
+
+public class Payment : BaseEntity
 {
-    internal class Payment
-    {
-    }
+    public int OrderId { get; set; }
+
+    public PaymentStatus Status { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public DateTime? PaidAt { get; set; }
+
+    public byte[] RowVersion { get; set; } = default!;
+
+    public Order Order { get; set; } = null!;
 }

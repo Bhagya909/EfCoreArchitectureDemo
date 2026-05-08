@@ -1,10 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities.Catalog;
 
-namespace Domain.Entities.Inventory
+namespace Domain.Entities.Inventory;
+
+public class Inventory : BaseEntity
 {
-    internal class Inventory
-    {
-    }
+    public int ProductId { get; set; }
+
+    public int Quantity { get; set; }
+
+    public DateTime LastUpdated { get; set; }
+
+    public byte[] RowVersion { get; set; } = default!;
+
+    public Product Product { get; set; } = null!;
 }

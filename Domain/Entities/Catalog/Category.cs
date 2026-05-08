@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Entities.Catalog;
 
-namespace Domain.Entities.Catalog
+public class Category : BaseEntity
 {
-    internal class Category
-    {
-    }
+    public string Name { get; set; } = null!;
+
+    public ICollection<ProductCategory> ProductCategories { get; set; }
+        = new List<ProductCategory>();
 }

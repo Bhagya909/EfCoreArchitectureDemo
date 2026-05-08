@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Entities.Logging;
 
-namespace Domain.Entities.Logging
+public class ChangeLog : BaseEntity
 {
-    internal class ChangeLog
-    {
-    }
+    public string ActionType { get; set; } = null!;
+
+    public string? EntityName { get; set; }
+
+    public int? ReferenceId { get; set; }
+
+    public string? RawData { get; set; }
+
+    public string? Summary { get; set; }
 }

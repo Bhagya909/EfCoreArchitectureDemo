@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Enums;
 
-namespace Domain.Enums
+public enum InventoryTransactionType
 {
-    internal class InventoryTransactionType
-    {
-    }
+    IN = 1,
+    OUT = 2
 }

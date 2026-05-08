@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Enums;
 
-namespace Domain.Enums
+public enum OrderStatus
 {
-    internal class OrderStatus
-    {
-    }
+    PendingPayment = 1,
+    Paid = 2,
+    Cancelled = 3,
+    Completed = 4
 }

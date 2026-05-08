@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Domain.Entities.Orders;
 
-namespace Domain.Entities.Orders
+public class Customer : BaseEntity
 {
-    internal class Customer
-    {
-    }
+    public string Name { get; set; } = null!;
+
+    public string Email { get; set; } = null!;
+
+    public ICollection<Order> Orders { get; set; }
+        = new List<Order>();
 }
