@@ -15,4 +15,23 @@ public class Payment : BaseEntity
     public byte[] RowVersion { get; set; } = default!;
 
     public Order Order { get; set; } = null!;
+
+
+
+    public void MarkAsCompleted()
+    {
+        if (Status == PaymentStatus.Completed)
+            throw new InvalidOperationException("Payment already completed.");
+
+        Status = PaymentStatus.Completed;
+        PaidAt = DateTime.UtcNow;
+    }
+
+    public void MarkAsFailed()
+    {
+        if (Status == PaymentStatus.Completed)
+            throw new InvalidOperationException("Completed payment cannot fail.");
+
+        Status = PaymentStatus.Failed;
+    }
 }

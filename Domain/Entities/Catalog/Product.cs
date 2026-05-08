@@ -23,4 +23,15 @@ public class Product : BaseEntity
 
     public ICollection<InventoryTransaction> InventoryTransactions { get; set; }
         = new List<InventoryTransaction>();
+
+
+
+    public void UpdatePrice(decimal newPrice)
+    {
+        if (newPrice < 0)
+            throw new ArgumentException("Price cannot be negative.");
+
+        BasePrice = newPrice;
+    }
 }
+

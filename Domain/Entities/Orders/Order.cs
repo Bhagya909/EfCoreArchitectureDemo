@@ -18,4 +18,29 @@ public class Order : BaseEntity
 
     public ICollection<OrderItem> OrderItems { get; set; }
         = new List<OrderItem>();
+
+
+    public void MarkAsPaid()
+    {
+        if (Status == OrderStatus.Cancelled)
+            throw new InvalidOperationException("Cancelled order cannot be paid.");
+
+        Status = OrderStatus.Paid;
+    }
+
+    public void Complete()
+    {
+        if (Status != OrderStatus.Paid)
+            throw new InvalidOperationException("Only paid orders can be completed.");
+
+        Status = OrderStatus.Completed;
+    }
+
+    public void Cancel()
+    {
+        if (Status == OrderStatus.Completed)
+            throw new InvalidOperationException("Completed order cannot be cancelled.");
+
+        Status = OrderStatus.Cancelled;
+    }
 }
