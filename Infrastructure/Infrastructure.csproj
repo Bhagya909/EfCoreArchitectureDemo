@@ -19,6 +19,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,11 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\" />
-    <Folder Include="Persistence\Configurations\Catalog\" />
-    <Folder Include="Persistence\Configurations\Inventory\" />
-    <Folder Include="Persistence\Configurations\Logging\" />
-    <Folder Include="Persistence\Configurations\Orders\" />
     <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Interceptors\" />
     <Folder Include="Persistence\Seed\" />
