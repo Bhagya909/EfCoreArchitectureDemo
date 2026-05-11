@@ -25,6 +25,25 @@ public class Product : BaseEntity
         = new List<InventoryTransaction>();
 
 
+    private Product()
+    {
+    }
+
+    public Product(
+        string name,
+        string sku,
+        decimal basePrice)
+    {
+        Name = name;
+        SKU = sku;
+        BasePrice = basePrice;
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void UpdatePrice(decimal newPrice)
     {
