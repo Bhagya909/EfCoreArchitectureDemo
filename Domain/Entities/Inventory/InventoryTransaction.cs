@@ -14,4 +14,20 @@ public class InventoryTransaction : BaseEntity
     public string? Reason { get; set; }
 
     public Product Product { get; set; } = null!;
+
+    private InventoryTransaction()
+    {
+    }
+
+    public InventoryTransaction(
+        int productId,
+        int quantityChange,
+        InventoryTransactionType type,
+        string? reason)
+    {
+        ProductId = productId;
+        QuantityChange = quantityChange;
+        TransactionType = type;
+        Reason = reason;
+    }
 }
