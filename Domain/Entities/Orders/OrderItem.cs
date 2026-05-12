@@ -17,4 +17,18 @@ public class OrderItem
     public Order Order { get; set; } = null!;
 
     public Product Product { get; set; } = null!;
+
+    private OrderItem()
+    {
+    }
+
+    public OrderItem(
+        int productId,
+        int quantity,
+        decimal unitPrice)
+    {
+        ProductId = productId;
+        Quantity = quantity;
+        UnitPrice = unitPrice;
+    }
 }

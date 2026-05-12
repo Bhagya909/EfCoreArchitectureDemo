@@ -20,6 +20,32 @@ public class Order : BaseEntity
         = new List<OrderItem>();
 
 
+    private Order()
+    {
+    }
+
+    public Order(
+        int customerId,
+        decimal totalAmount)
+    {
+        CustomerId = customerId;
+        TotalAmount = totalAmount;
+        Status = OrderStatus.PendingPayment;
+    }
+
+    public void AddOrderItem(OrderItem item)
+    {
+        OrderItems.Add(item);
+    }
+
+ 
+    public void MarkAsCompleted()
+    {
+        Status = OrderStatus.Completed;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+
     public void MarkAsPaid()
     {
         if (Status == OrderStatus.Cancelled)

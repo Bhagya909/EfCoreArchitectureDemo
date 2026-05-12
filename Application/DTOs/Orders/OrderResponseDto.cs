@@ -11,5 +11,8 @@ namespace Application.DTOs.Orders
         public string Status { get; set; } = string.Empty;
 
         public decimal TotalAmount { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
     }
 }
