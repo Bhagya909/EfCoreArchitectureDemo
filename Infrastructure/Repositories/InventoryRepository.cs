@@ -1,13 +1,14 @@
 ﻿using Domain.Entities.Inventory;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Application.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Infrastructure.Repositories
 {
-    public class InventoryRepository
+    public class InventoryRepository : IInventoryRepository
     {
         private readonly RetailDbContext _context;
 

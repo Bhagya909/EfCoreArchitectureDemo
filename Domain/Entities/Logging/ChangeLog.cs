@@ -11,4 +11,22 @@ public class ChangeLog : BaseEntity
     public string? RawData { get; set; }
 
     public string? Summary { get; set; }
+
+    private ChangeLog()
+    {
+    }
+
+    public ChangeLog(
+        string actionType,
+        string? entityName,
+        int? referenceId,
+        string rawData,
+        string? summary = null)
+    {
+        ActionType = actionType;
+        EntityName = entityName;
+        ReferenceId = referenceId;
+        RawData = rawData;
+        Summary = summary;
+    }
 }
