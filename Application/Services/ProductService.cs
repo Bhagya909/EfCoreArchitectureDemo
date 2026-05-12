@@ -1,6 +1,8 @@
-﻿using Application.DTOs.Products;
+﻿using Application.Common;
+using Application.DTOs.Products;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Mappings;
 using Domain.Entities.Catalog;
 using System;
 using System.Collections.Generic;
@@ -37,30 +39,28 @@ namespace Application.Services
 
             await _productRepository.AddAsync(product);
 
-            await _productRepository.SaveChangesAsync();
-
-            return new ProductResponseDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                SKU = product.SKU,
-                BasePrice = product.BasePrice
-            };
+            return product.ToResponseDto();
         }
 
-        public async Task<IEnumerable<ProductResponseDto>>
-            GetAllProductsAsync()
+        public async Task<PagedResult<ProductResponseDto>>
+    GetAllProductsAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm)
         {
-            var products =
-                await _productRepository.GetAllAsync();
+            var (products, totalCount) =
+    await _productRepository.GetPagedAsync(
+        pageNumber,
+        pageSize,
+        searchTerm);
 
-            return products.Select(p => new ProductResponseDto
+            return new PagedResult<ProductResponseDto>
             {
-                Id = p.Id,
-                Name = p.Name,
-                SKU = p.SKU,
-                BasePrice = p.BasePrice
-            });
+                Items = products.Select(p => p.ToResponseDto()),
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<ProductResponseDto?> GetProductByIdAsync(
@@ -74,13 +74,7 @@ namespace Application.Services
                 return null;
             }
 
-            return new ProductResponseDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                SKU = product.SKU,
-                BasePrice = product.BasePrice
-            };
+            return product.ToResponseDto();
         }
 
         public async Task<bool> SoftDeleteProductAsync(int id)
@@ -94,8 +88,6 @@ namespace Application.Services
             }
 
             product.SoftDelete();
-
-            await _productRepository.SaveChangesAsync();
 
             return true;
         }

@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Products;
+﻿using Application.Common;
+using Application.DTOs.Products;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,11 @@ namespace Application.Interfaces.Services
         Task<ProductResponseDto> CreateProductAsync(
         CreateProductDto dto);
 
-        Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync();
+        Task<PagedResult<ProductResponseDto>>
+    GetAllProductsAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm);
 
         Task<ProductResponseDto?> GetProductByIdAsync(int id);
 

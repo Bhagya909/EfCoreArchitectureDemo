@@ -14,6 +14,5 @@ namespace Application.Interfaces.Repositories
         Task AddTransactionAsync(
             InventoryTransaction transaction);
 
-        Task SaveChangesAsync();
     }
 }

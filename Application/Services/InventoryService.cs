@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Inventory;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities.Inventory;
@@ -11,12 +12,16 @@ namespace Application.Services
 {
     public class InventoryService : IInventoryService
     {
+        private readonly IUnitOfWork _unitOfWork;
+
         private readonly IInventoryRepository _inventoryRepository;
 
         public InventoryService(
-            IInventoryRepository inventoryRepository)
+    IInventoryRepository inventoryRepository,
+    IUnitOfWork unitOfWork)
         {
             _inventoryRepository = inventoryRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<InventoryResponseDto>
@@ -47,8 +52,7 @@ namespace Application.Services
 
             await _inventoryRepository
                 .AddTransactionAsync(transaction);
-
-            await _inventoryRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return new InventoryResponseDto
             {
@@ -71,30 +75,37 @@ namespace Application.Services
         }
 
         public async Task DeductStockAsync(
-            int productId,
-            int quantity)
+    int productId,
+    int quantity)
         {
-            var inventory =
-                await _inventoryRepository
-                    .GetByProductIdAsync(productId);
-
-            if (inventory is null)
+            try
             {
-                throw new Exception("Inventory not found.");
+                var inventory =
+                    await _inventoryRepository
+                        .GetByProductIdAsync(productId);
+
+                if (inventory is null)
+                {
+                    throw new Exception(
+                        "Inventory not found.");
+                }
+
+                inventory.RemoveStock(quantity);
+
+                var transaction = new InventoryTransaction(
+                    productId,
+                    quantity,
+                    InventoryTransactionType.OUT,
+                    "Stock Deducted");
+
+                await _inventoryRepository
+                    .AddTransactionAsync(transaction);
             }
-
-            inventory.RemoveStock(quantity);
-
-            var transaction = new InventoryTransaction(
-                productId,
-                quantity,
-                InventoryTransactionType.OUT,
-                "Stock Deducted");
-
-            await _inventoryRepository
-                .AddTransactionAsync(transaction);
-
-            await _inventoryRepository.SaveChangesAsync();
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new Exception(
+                    "Inventory was updated by another user. Please retry.");
+            }
         }
     }
 }

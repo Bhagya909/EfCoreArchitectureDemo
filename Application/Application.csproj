@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Interfaces\Logging\" />
-    <Folder Include="Common\" />
     <Folder Include="Services\Inventory\" />
     <Folder Include="Services\Logging\" />
     <Folder Include="Services\Payments\" />

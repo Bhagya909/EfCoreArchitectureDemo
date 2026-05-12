@@ -32,8 +32,6 @@ namespace Application.Services
                 summary);
 
             await _repository.AddAsync(log);
-
-            await _repository.SaveChangesAsync();
         }
     }
 }

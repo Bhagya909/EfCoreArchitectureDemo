@@ -37,9 +37,6 @@ namespace Infrastructure.Repositories
                 .AddAsync(transaction);
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
+        
     }
 }

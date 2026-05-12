@@ -21,9 +21,6 @@ namespace Infrastructure.Repositories
             await _context.ChangeLogs.AddAsync(changeLog);
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
+     
     }
 }

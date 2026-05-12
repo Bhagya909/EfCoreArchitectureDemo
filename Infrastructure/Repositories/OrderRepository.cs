@@ -30,9 +30,6 @@ namespace Infrastructure.Repositories
             await _context.Orders.AddAsync(order);
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
+        
     }
 }

@@ -7,6 +7,7 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Services;
 using Infrastructure.Repositories;
+using Application.Interfaces;
 
 namespace Infrastructure.Extensions;
 
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IChangeLogService, ChangeLogService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

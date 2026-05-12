@@ -2,15 +2,16 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities.Orders;
-using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.Interfaces;
+using Application.Mappings;
+
 
 namespace Application.Services
 {
     public class OrderService : IOrderService
     {
+        private readonly IUnitOfWork _unitOfWork;
+
         private readonly IOrderRepository _orderRepository;
 
         private readonly IProductRepository _productRepository;
@@ -20,79 +21,90 @@ namespace Application.Services
         public OrderService(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _inventoryService = inventoryService;
+            _unitOfWork = unitOfWork;
         }
 
+       
+
         public async Task<OrderResponseDto>
-            CreateOrderAsync(CreateOrderDto dto)
+    CreateOrderAsync(CreateOrderDto dto)
         {
-            decimal totalAmount = 0;
+            await _unitOfWork.BeginTransactionAsync();
 
-            var orderItems = new List<OrderItem>();
-
-            foreach (var item in dto.Items)
+            try
             {
-                var product =
-                    await _productRepository
-                        .GetByIdAsync(item.ProductId);
+                decimal totalAmount = 0;
 
-                if (product is null)
+                var orderItems = new List<OrderItem>();
+
+                foreach (var item in dto.Items)
                 {
-                    throw new Exception(
-                        $"Product {item.ProductId} not found.");
+                    var product =
+                        await _productRepository
+                            .GetByIdAsync(item.ProductId);
+
+                    if (product is null)
+                    {
+                        throw new Exception(
+                            $"Product {item.ProductId} not found.");
+                    }
+
+                    var stockAvailable =
+                        await _inventoryService.ValidateStockAsync(
+                            item.ProductId,
+                            item.Quantity);
+
+                    if (!stockAvailable)
+                    {
+                        throw new Exception(
+                            $"Insufficient stock for product {product.Name}");
+                    }
+
+                    totalAmount +=
+                        product.BasePrice * item.Quantity;
+
+                    orderItems.Add(new OrderItem(
+                        product.Id,
+                        item.Quantity,
+                        product.BasePrice));
                 }
 
-                var stockAvailable =
-                    await _inventoryService.ValidateStockAsync(
+                var order = new Order(
+                    dto.CustomerId,
+                    totalAmount);
+
+                foreach (var item in orderItems)
+                {
+                    order.AddOrderItem(item);
+                }
+
+                await _orderRepository.AddAsync(order);
+
+                foreach (var item in dto.Items)
+                {
+                    await _inventoryService.DeductStockAsync(
                         item.ProductId,
                         item.Quantity);
-
-                if (!stockAvailable)
-                {
-                    throw new Exception(
-                        $"Insufficient stock for product {product.Name}");
                 }
 
-                totalAmount +=
-                    product.BasePrice * item.Quantity;
+                await _unitOfWork.SaveChangesAsync();
 
-                orderItems.Add(new OrderItem(
-                    product.Id,
-                    item.Quantity,
-                    product.BasePrice));
+                await _unitOfWork.CommitTransactionAsync();
+
+                return order.ToResponseDto();
             }
-
-            var order = new Order(
-                dto.CustomerId,
-                totalAmount);
-
-            foreach (var item in orderItems)
+            catch
             {
-                order.AddOrderItem(item);
+                await _unitOfWork.RollbackTransactionAsync();
+
+                throw;
             }
-
-            await _orderRepository.AddAsync(order);
-
-            foreach (var item in dto.Items)
-            {
-                await _inventoryService.DeductStockAsync(
-                    item.ProductId,
-                    item.Quantity);
-            }
-
-            await _orderRepository.SaveChangesAsync();
-
-            return new OrderResponseDto
-            {
-                OrderId = order.Id,
-                Status = order.Status.ToString(),
-                TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt
-            };
         }
 
         public async Task<OrderResponseDto?> GetOrderByIdAsync(
@@ -106,13 +118,7 @@ namespace Application.Services
                 return null;
             }
 
-            return new OrderResponseDto
-            {
-                OrderId = order.Id,
-                Status = order.Status.ToString(),
-                TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt
-            };
+            return order.ToResponseDto();
         }
 
     }

@@ -9,6 +9,5 @@ namespace Application.Interfaces.Repositories
     {
         Task AddAsync(ChangeLog changeLog);
 
-        Task SaveChangesAsync();
     }
 }

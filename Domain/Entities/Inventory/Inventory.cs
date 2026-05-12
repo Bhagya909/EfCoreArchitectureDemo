@@ -12,7 +12,7 @@ public class Inventory : BaseEntity
 
     public DateTime LastUpdated { get; set; }
 
-    public byte[] RowVersion { get; set; } = default!;
+    public byte[] RowVersion { get; private set; } = default!;
 
     public Product Product { get; set; } = null!;
 

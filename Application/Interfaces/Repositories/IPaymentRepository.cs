@@ -11,6 +11,5 @@ namespace Application.Interfaces.Repositories
 
         Task AddAsync(Payment payment);
 
-        Task SaveChangesAsync();
     }
 }

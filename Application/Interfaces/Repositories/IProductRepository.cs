@@ -11,10 +11,13 @@ namespace Application.Interfaces.Repositories
 
         Task<Product?> GetByIdAsync(int id);
 
-        Task<IEnumerable<Product>> GetAllAsync();
+        Task<(IEnumerable<Product> Items, int TotalCount)>
+    GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm);
 
         Task AddAsync(Product product);
 
-        Task SaveChangesAsync();
     }
 }

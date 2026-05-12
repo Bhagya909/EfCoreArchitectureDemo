@@ -29,11 +29,31 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<(IEnumerable<Product> Items, int TotalCount)>
+    GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm)
         {
-            return await _context.Products
-                .AsNoTracking()
+            var query = _context.Products
+                .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(p =>
+                    p.Name.Contains(searchTerm) ||
+                    p.SKU.Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(p => p.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task AddAsync(Product product)
@@ -41,9 +61,6 @@ namespace Infrastructure.Repositories
             await _context.Products.AddAsync(product);
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
+     
     }
 }

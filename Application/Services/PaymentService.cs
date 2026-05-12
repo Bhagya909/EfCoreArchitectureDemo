@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Payments;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Mappings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,15 +32,7 @@ namespace Application.Services
 
             payment.MarkAsCompleted();
 
-            await _paymentRepository.SaveChangesAsync();
-
-            return new PaymentResponseDto
-            {
-                PaymentId = payment.Id,
-                Status = payment.Status.ToString(),
-                Amount = payment.Amount,
-                PaidAt = payment.PaidAt
-            };
+            return payment.ToResponseDto();
         }
 
         public async Task<PaymentResponseDto>
@@ -56,15 +49,8 @@ namespace Application.Services
 
             payment.MarkAsFailed();
 
-            await _paymentRepository.SaveChangesAsync();
 
-            return new PaymentResponseDto
-            {
-                PaymentId = payment.Id,
-                Status = payment.Status.ToString(),
-                Amount = payment.Amount,
-                PaidAt = payment.PaidAt
-            };
+            return payment.ToResponseDto();
         }
     }
 }
