@@ -78,34 +78,26 @@ namespace Application.Services
     int productId,
     int quantity)
         {
-            try
-            {
-                var inventory =
-                    await _inventoryRepository
-                        .GetByProductIdAsync(productId);
-
-                if (inventory is null)
-                {
-                    throw new Exception(
-                        "Inventory not found.");
-                }
-
-                inventory.RemoveStock(quantity);
-
-                var transaction = new InventoryTransaction(
-                    productId,
-                    quantity,
-                    InventoryTransactionType.OUT,
-                    "Stock Deducted");
-
+            var inventory =
                 await _inventoryRepository
-                    .AddTransactionAsync(transaction);
-            }
-            catch (DbUpdateConcurrencyException)
+                    .GetByProductIdAsync(productId);
+
+            if (inventory is null)
             {
                 throw new Exception(
-                    "Inventory was updated by another user. Please retry.");
+                    "Inventory not found.");
             }
+
+            inventory.RemoveStock(quantity);
+
+            var transaction = new InventoryTransaction(
+                productId,
+                quantity,
+                InventoryTransactionType.OUT,
+                "Stock Deducted");
+
+            await _inventoryRepository
+                .AddTransactionAsync(transaction);
         }
     }
 }
