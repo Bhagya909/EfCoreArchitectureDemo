@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Validators;
 using Domain.Entities.Inventory;
 using Domain.Enums;
 using System;
@@ -27,6 +28,7 @@ namespace Application.Services
         public async Task<InventoryResponseDto>
             AddInventoryAsync(CreateInventoryDto dto)
         {
+            InventoryValidator.ValidateInventory(dto);
             var inventory =
                 await _inventoryRepository
                     .GetByProductIdAsync(dto.ProductId);

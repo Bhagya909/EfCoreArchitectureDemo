@@ -1,9 +1,10 @@
 ﻿using Application.DTOs.Orders;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
-using Domain.Entities.Orders;
-using Application.Interfaces;
 using Application.Mappings;
+using Application.Validators;
+using Domain.Entities.Orders;
 
 
 namespace Application.Services
@@ -35,6 +36,7 @@ namespace Application.Services
         public async Task<OrderResponseDto>
     CreateOrderAsync(CreateOrderDto dto)
         {
+            OrderValidator.ValidateCreateOrder(dto);
             await _unitOfWork.BeginTransactionAsync();
 
             try

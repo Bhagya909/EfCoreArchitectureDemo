@@ -4,6 +4,7 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappings;
 using Application.Models;
+using Application.Validators;
 using Domain.Entities.Catalog;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Application.Services
         public async Task<ProductResponseDto> CreateProductAsync(
             CreateProductDto dto)
         {
+            ProductValidator.ValidateCreateProduct(dto);
             var existingProduct =
                 await _productRepository.GetBySkuAsync(dto.SKU);
 
