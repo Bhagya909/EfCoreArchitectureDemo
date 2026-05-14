@@ -101,6 +101,13 @@ namespace Application.Services
                 $"OrderId={order.Id}",
                 $"Payment completed for Order {order.Id}.");
 
+                await _changeLogService.LogAsync(
+                "ORDER_PAID",
+                "Order",
+                order.Id,
+                null,
+                $"Order {order.Id} marked as paid");
+
                 return new PaymentResponseDto
                 {
                     PaymentId = payment.Id,

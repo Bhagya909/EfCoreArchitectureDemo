@@ -31,6 +31,7 @@ public class Order : BaseEntity
         CustomerId = customerId;
         TotalAmount = totalAmount;
         Status = OrderStatus.PendingPayment;
+        CreatedAt = DateTime.UtcNow;
     }
 
     public void AddOrderItem(OrderItem item)
@@ -41,6 +42,11 @@ public class Order : BaseEntity
  
     public void MarkAsCompleted()
     {
+        if (Status != OrderStatus.Paid)
+        {
+            throw new InvalidOperationException(
+                "Only paid orders can be completed.");
+        }
         Status = OrderStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
     }
@@ -48,6 +54,11 @@ public class Order : BaseEntity
 
     public void MarkAsPaid()
     {
+        if (Status != OrderStatus.PendingPayment)
+        {
+            throw new InvalidOperationException(
+                "Only pending payment orders can be marked as paid.");
+        }
         Status = OrderStatus.Paid;
 
         UpdatedAt = DateTime.UtcNow;
@@ -61,11 +72,18 @@ public class Order : BaseEntity
         Status = OrderStatus.Completed;
     }
 
+    
+
     public void Cancel()
     {
-        if (Status == OrderStatus.Completed)
-            throw new InvalidOperationException("Completed order cannot be cancelled.");
+        if(Status == OrderStatus.Paid){
+            throw new InvalidOperationException(
+                "Paid orders cannot be cancelled.");
+        }
 
         Status = OrderStatus.Cancelled;
+
+        UpdatedAt = DateTime.UtcNow;
+
     }
 }

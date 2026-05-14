@@ -19,16 +19,20 @@ namespace Application.Services
 
         private readonly IInventoryService _inventoryService;
 
+        private readonly IChangeLogService _changeLogService;
+
         public OrderService(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
             IInventoryService inventoryService,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IChangeLogService changeLogService)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _inventoryService = inventoryService;
             _unitOfWork = unitOfWork;
+            _changeLogService = changeLogService;
         }
 
        
@@ -88,7 +92,12 @@ namespace Application.Services
 
                 await _orderRepository.AddAsync(order);
 
-         
+                await _changeLogService.LogAsync(
+                "ORDER_CREATED",
+                "Order",
+                order.Id,
+                $"CustomerId={dto.CustomerId}",
+                $"Order created with total {totalAmount}");
 
                 await _unitOfWork.SaveChangesAsync();
 
