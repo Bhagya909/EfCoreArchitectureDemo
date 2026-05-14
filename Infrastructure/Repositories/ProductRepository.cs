@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Repositories;
+using Application.Models;
 using Domain.Entities.Catalog;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -31,26 +32,38 @@ namespace Infrastructure.Repositories
 
         public async Task<(IEnumerable<Product> Items, int TotalCount)>
     GetPagedAsync(
-        int pageNumber,
-        int pageSize,
-        string? searchTerm)
+        ProductQueryParameters queryParameters)
         {
             var query = _context.Products
                 .AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            if (!string.IsNullOrWhiteSpace(
+                queryParameters.SearchTerm))
             {
                 query = query.Where(p =>
-                    p.Name.Contains(searchTerm) ||
-                    p.SKU.Contains(searchTerm));
+                    p.Name.Contains(
+                        queryParameters.SearchTerm) ||
+                    p.SKU.Contains(
+                        queryParameters.SearchTerm));
             }
 
-            var totalCount = await query.CountAsync();
+            query = queryParameters.SortBy?.ToLower() switch
+            {
+                "name" => query.OrderBy(p => p.Name),
+
+                "price" => query.OrderBy(p => p.BasePrice),
+
+                _ => query.OrderBy(p => p.Id)
+            };
+
+            var totalCount =
+                await query.CountAsync();
 
             var items = await query
-                .OrderBy(p => p.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Skip(
+                    (queryParameters.PageNumber - 1)
+                    * queryParameters.PageSize)
+                .Take(queryParameters.PageSize)
                 .ToListAsync();
 
             return (items, totalCount);

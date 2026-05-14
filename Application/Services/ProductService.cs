@@ -3,6 +3,7 @@ using Application.DTOs.Products;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappings;
+using Application.Models;
 using Domain.Entities.Catalog;
 using System;
 using System.Collections.Generic;
@@ -44,22 +45,24 @@ namespace Application.Services
 
         public async Task<PagedResult<ProductResponseDto>>
     GetAllProductsAsync(
-        int pageNumber,
-        int pageSize,
-        string? searchTerm)
+        ProductQueryParameters queryParameters)
         {
             var (products, totalCount) =
-    await _productRepository.GetPagedAsync(
-        pageNumber,
-        pageSize,
-        searchTerm);
+                await _productRepository.GetPagedAsync(
+                    queryParameters);
 
             return new PagedResult<ProductResponseDto>
             {
-                Items = products.Select(p => p.ToResponseDto()),
+                Items = products.Select(p =>
+                    p.ToResponseDto()),
+
                 TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize
+
+                PageNumber =
+                    queryParameters.PageNumber,
+
+                PageSize =
+                    queryParameters.PageSize
             };
         }
 

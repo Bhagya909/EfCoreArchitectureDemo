@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Catalog;
+﻿using Application.Models;
+using Domain.Entities.Catalog;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,9 +14,7 @@ namespace Application.Interfaces.Repositories
 
         Task<(IEnumerable<Product> Items, int TotalCount)>
     GetPagedAsync(
-        int pageNumber,
-        int pageSize,
-        string? searchTerm);
+        ProductQueryParameters queryParameters);
 
         Task AddAsync(Product product);
 

@@ -1,5 +1,6 @@
 ﻿using Application.Common;
 using Application.DTOs.Products;
+using Application.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,9 +14,7 @@ namespace Application.Interfaces.Services
 
         Task<PagedResult<ProductResponseDto>>
     GetAllProductsAsync(
-        int pageNumber,
-        int pageSize,
-        string? searchTerm);
+        ProductQueryParameters queryParameters);
 
         Task<ProductResponseDto?> GetProductByIdAsync(int id);
 
