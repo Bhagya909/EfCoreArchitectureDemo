@@ -7,6 +7,7 @@ namespace Application.Interfaces.Repositories
 {
     public interface IChangeLogRepository
     {
+        // change log repository interface
         Task AddAsync(ChangeLog changeLog);
 
     }
