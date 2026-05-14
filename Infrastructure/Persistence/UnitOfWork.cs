@@ -1,8 +1,7 @@
 ﻿using Application.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Infrastructure.Persistence
 {
@@ -41,7 +40,15 @@ namespace Infrastructure.Persistence
 
         public async Task SaveChangesAsync()
         {
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new Exception(
+                    "A concurrency conflict occurred. Please retry the operation.");
+            }
         }
     }
 }

@@ -111,6 +111,15 @@ namespace Application.Services
 
             await _inventoryRepository
                 .AddTransactionAsync(transaction);
+
+            await _changeLogService.LogAsync(
+            "Inventory_Deducted",
+            "Inventory",
+            inventory.Id,
+            $"ProductId={productId}; Quantity={quantity}",
+            $"Inventory deducted for ProductId {productId}");
+
+
         }
     }
 }

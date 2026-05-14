@@ -23,6 +23,8 @@ namespace Application.Services
 
         private readonly IChangeLogService _changeLogService;
 
+        private const int MaxRetryAttempts = 3;
+
         public PaymentService(
     IPaymentRepository paymentRepository,
     IOrderRepository orderRepository,
@@ -41,86 +43,94 @@ namespace Application.Services
             _changeLogService = changeLogService;
         }
 
-        public async Task<PaymentResponseDto>
+    public async Task<PaymentResponseDto>
     CompletePaymentAsync(int orderId)
         {
-            await _unitOfWork.BeginTransactionAsync();
+            var retryCount = 0;
 
-            try
+            while (true)
             {
-                var order =
-                    await _orderRepository
-                        .GetByIdAsync(orderId);
-
-                if (order is null)
+                try
                 {
-                    throw new Exception(
-                        "Order not found.");
+                    await _unitOfWork
+                        .BeginTransactionAsync();
+
+                    var order =
+                        await _orderRepository
+                            .GetByIdAsync(orderId);
+
+                    if (order is null)
+                    {
+                        throw new Exception(
+                            "Order not found.");
+                    }
+
+                    if (order.Status !=
+                        OrderStatus.PendingPayment)
+                    {
+                        throw new Exception(
+                            "Order is not awaiting payment.");
+                    }
+
+                    foreach (var item in order.OrderItems)
+                    {
+                        await _inventoryService
+                            .DeductStockAsync(
+                                item.ProductId,
+                                item.Quantity);
+                    }
+
+                    var payment =
+                        new Payment(
+                            orderId,
+                            order.TotalAmount);
+
+                    payment.MarkAsCompleted();
+
+                    order.MarkAsPaid();
+
+                    await _paymentRepository
+                        .AddAsync(payment);
+
+                    await _changeLogService.LogAsync(
+                        "Payment_Completed",
+                        "Payment",
+                        payment.Id,
+                        $"OrderId={order.Id}",
+                        $"Payment completed for Order {order.Id}");
+
+                    await _unitOfWork
+                        .SaveChangesAsync();
+
+                    await _unitOfWork
+                        .CommitTransactionAsync();
+
+                    return new PaymentResponseDto
+                    {
+                        PaymentId = payment.Id,
+                        Status = payment.Status.ToString(),
+                        Amount = payment.Amount,
+                        PaidAt = payment.PaidAt
+                    };
                 }
-
-                if (order.Status != OrderStatus.PendingPayment)
+                catch (Exception ex)
                 {
-                    throw new Exception(
-                        "Order is not awaiting payment.");
+                    await _unitOfWork
+                        .RollbackTransactionAsync();
+
+                    retryCount++;
+
+                    var isConcurrencyConflict =
+                        ex.Message.Contains(
+                            "concurrency",
+                            StringComparison.OrdinalIgnoreCase);
+
+                    if (!isConcurrencyConflict ||
+                        retryCount >= MaxRetryAttempts)
+                    {
+                        throw;
+                    }
                 }
-
-                foreach (var item in order.OrderItems)
-                {
-                    await _inventoryService
-                        .DeductStockAsync(
-                            item.ProductId,
-                            item.Quantity);
-                }
-
-                await _changeLogService.LogAsync(
-                "INVENTORY_DEDUCTED",
-                "Inventory",
-                null,
-                $"OrderId={order.Id}",
-                $"Inventory deducted for Order {order.Id}.");
-
-                var payment = new Payment(
-                    orderId,
-                    order.TotalAmount);
-
-                payment.MarkAsCompleted();
-
-                order.MarkAsPaid();
-
-                await _paymentRepository
-                    .AddAsync(payment);
-
-                await _unitOfWork.SaveChangesAsync();
-
-                await _unitOfWork.CommitTransactionAsync();
-
-                await _changeLogService.LogAsync(
-                "PAYMENT_COMPLETED",
-                "Payment",
-                payment.Id,
-                $"OrderId={order.Id}",
-                $"Payment completed for Order {order.Id}.");
-
-                await _changeLogService.LogAsync(
-                "ORDER_PAID",
-                "Order",
-                order.Id,
-                null,
-                $"Order {order.Id} marked as paid");
-
-                return new PaymentResponseDto
-                {
-                    PaymentId = payment.Id,
-                    Status = payment.Status.ToString(),
-                    Amount = payment.Amount,
-                    PaidAt = payment.PaidAt
-                };
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-
-                throw;
             }
         }
 
