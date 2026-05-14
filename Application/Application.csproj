@@ -7,16 +7,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\Inventory\**" />
+    <Compile Remove="Services\Logging\**" />
+    <Compile Remove="Services\Orders\**" />
+    <Compile Remove="Services\Payments\**" />
+    <Compile Remove="Services\Products\**" />
+    <EmbeddedResource Remove="Services\Inventory\**" />
+    <EmbeddedResource Remove="Services\Logging\**" />
+    <EmbeddedResource Remove="Services\Orders\**" />
+    <EmbeddedResource Remove="Services\Payments\**" />
+    <EmbeddedResource Remove="Services\Products\**" />
+    <None Remove="Services\Inventory\**" />
+    <None Remove="Services\Logging\**" />
+    <None Remove="Services\Orders\**" />
+    <None Remove="Services\Payments\**" />
+    <None Remove="Services\Products\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Interfaces\Logging\" />
-    <Folder Include="Services\Inventory\" />
-    <Folder Include="Services\Logging\" />
-    <Folder Include="Services\Payments\" />
-    <Folder Include="Services\Orders\" />
-    <Folder Include="Services\Products\" />
   </ItemGroup>
 
 </Project>

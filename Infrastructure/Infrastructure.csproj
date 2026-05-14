@@ -9,8 +9,11 @@
 
   <ItemGroup>
     <Compile Remove="Persistence\Migrations\**" />
+    <Compile Remove="Services\**" />
     <EmbeddedResource Remove="Persistence\Migrations\**" />
+    <EmbeddedResource Remove="Services\**" />
     <None Remove="Persistence\Migrations\**" />
+    <None Remove="Services\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,9 +40,6 @@
   <ItemGroup>
     <Folder Include="Persistence\Interceptors\" />
     <Folder Include="Persistence\Seed\" />
-    <Folder Include="Services\Logging\" />
-    <Folder Include="Services\AI\" />
-    <Folder Include="Services\Persistence\" />
   </ItemGroup>
 
 </Project>

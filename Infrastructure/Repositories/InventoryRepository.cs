@@ -2,15 +2,20 @@
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Application.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Repositories
 {
     public class InventoryRepository : IInventoryRepository
     {
         private readonly RetailDbContext _context;
+
+        private static readonly
+            Func<RetailDbContext, int, IAsyncEnumerable<Inventory>>
+            _getByProductIdCompiledQuery =
+                EF.CompileAsyncQuery(
+                    (RetailDbContext context, int productId) =>
+                        context.Inventories
+                            .Where(i => i.ProductId == productId));
 
         public InventoryRepository(RetailDbContext context)
         {
@@ -20,9 +25,15 @@ namespace Infrastructure.Repositories
         public async Task<Inventory?> GetByProductIdAsync(
             int productId)
         {
-            return await _context.Inventories
-                .FirstOrDefaultAsync(i =>
-                    i.ProductId == productId);
+            await foreach (var inventory in
+                _getByProductIdCompiledQuery(
+                    _context,
+                    productId))
+            {
+                return inventory;
+            }
+
+            return null;
         }
 
         public async Task AddAsync(Inventory inventory)
@@ -36,7 +47,5 @@ namespace Infrastructure.Repositories
             await _context.InventoryTransactions
                 .AddAsync(transaction);
         }
-
-        
     }
 }

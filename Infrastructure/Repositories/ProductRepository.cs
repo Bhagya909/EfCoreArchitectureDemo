@@ -5,15 +5,22 @@ using Application.Models;
 using Domain.Entities.Catalog;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Repositories
 {
     public class ProductRepository : IProductRepository
     {
         private readonly RetailDbContext _context;
+
+        // Compiled Query
+        private static readonly
+            Func<RetailDbContext, string, IAsyncEnumerable<Product>>
+            _getBySkuCompiledQuery =
+                EF.CompileAsyncQuery(
+                    (RetailDbContext context, string sku) =>
+                        context.Products
+                            .AsNoTracking()
+                            .Where(p => p.SKU == sku));
 
         public ProductRepository(RetailDbContext context)
         {
@@ -22,8 +29,13 @@ namespace Infrastructure.Repositories
 
         public async Task<Product?> GetBySkuAsync(string sku)
         {
-            return await _context.Products
-                .FirstOrDefaultAsync(p => p.SKU == sku);
+            await foreach (var product in
+                _getBySkuCompiledQuery(_context, sku))
+            {
+                return product;
+            }
+
+            return null;
         }
 
         public async Task<Product?> GetByIdAsync(int id)
@@ -32,9 +44,9 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<(IEnumerable<Product> Items, int TotalCount)>
-    GetPagedAsync(
-        ProductQueryParameters queryParameters)
+        public async Task<PagedResult<Product>>
+            GetPagedAsync(
+                ProductQueryParameters queryParameters)
         {
             var query = _context.Products
                 .AsNoTracking();
@@ -45,6 +57,7 @@ namespace Infrastructure.Repositories
                 query = query.Where(p =>
                     p.Name.Contains(
                         queryParameters.SearchTerm) ||
+
                     p.SKU.Contains(
                         queryParameters.SearchTerm));
             }
@@ -65,10 +78,18 @@ namespace Infrastructure.Repositories
                 .Skip(
                     (queryParameters.PageNumber - 1)
                     * queryParameters.PageSize)
+
                 .Take(queryParameters.PageSize)
+
                 .ToListAsync();
 
-            return (items, totalCount);
+            return new PagedResult<Product>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = queryParameters.PageNumber,
+                PageSize = queryParameters.PageSize
+            };
         }
 
         public async Task AddAsync(Product product)
@@ -77,9 +98,9 @@ namespace Infrastructure.Repositories
         }
 
         public async Task<
-    PagedResult<ProductResponseDto>>
-    GetPagedProjectedAsync(
-        ProductQueryParameters queryParameters)
+            PagedResult<ProductResponseDto>>
+            GetPagedProjectedAsync(
+                ProductQueryParameters queryParameters)
         {
             var query = _context.Products
                 .AsNoTracking();
@@ -132,6 +153,5 @@ namespace Infrastructure.Repositories
                 PageSize = queryParameters.PageSize
             };
         }
-
     }
 }

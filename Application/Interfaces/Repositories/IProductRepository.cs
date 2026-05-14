@@ -14,7 +14,7 @@ namespace Application.Interfaces.Repositories
 
         Task<Product?> GetByIdAsync(int id);
 
-        Task<(IEnumerable<Product> Items, int TotalCount)>
+        Task<PagedResult<Product>>
     GetPagedAsync(
         ProductQueryParameters queryParameters);
 
