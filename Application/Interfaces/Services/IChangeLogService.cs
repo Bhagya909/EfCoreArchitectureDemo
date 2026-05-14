@@ -10,7 +10,7 @@ namespace Application.Interfaces.Services
         string actionType,
         string entityName,
         int? referenceId,
-        string rawData,
-        string? summary = null);
+        string? rawData,
+        string? summary);
     }
 }

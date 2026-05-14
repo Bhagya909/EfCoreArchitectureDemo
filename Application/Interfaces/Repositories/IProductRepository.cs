@@ -1,4 +1,6 @@
-﻿using Application.Models;
+﻿using Application.Common;
+using Application.DTOs.Products;
+using Application.Models;
 using Domain.Entities.Catalog;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,10 @@ namespace Application.Interfaces.Repositories
         ProductQueryParameters queryParameters);
 
         Task AddAsync(Product product);
+
+        Task<PagedResult<ProductResponseDto>>
+    GetPagedProjectedAsync(
+        ProductQueryParameters queryParameters);
 
     }
 }

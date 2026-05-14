@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.Repositories;
+﻿using Application.Common;
+using Application.DTOs.Products;
+using Application.Interfaces.Repositories;
 using Application.Models;
 using Domain.Entities.Catalog;
 using Infrastructure.Persistence;
@@ -74,6 +76,62 @@ namespace Infrastructure.Repositories
             await _context.Products.AddAsync(product);
         }
 
-     
+        public async Task<
+    PagedResult<ProductResponseDto>>
+    GetPagedProjectedAsync(
+        ProductQueryParameters queryParameters)
+        {
+            var query = _context.Products
+                .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(
+                queryParameters.SearchTerm))
+            {
+                query = query.Where(p =>
+                    p.Name.Contains(
+                        queryParameters.SearchTerm) ||
+
+                    p.SKU.Contains(
+                        queryParameters.SearchTerm));
+            }
+
+            query = queryParameters.SortBy?.ToLower() switch
+            {
+                "name" => query.OrderBy(p => p.Name),
+
+                "price" => query.OrderBy(p => p.BasePrice),
+
+                _ => query.OrderBy(p => p.Id)
+            };
+
+            var totalCount =
+                await query.CountAsync();
+
+            var items = await query
+                .Skip(
+                    (queryParameters.PageNumber - 1)
+                    * queryParameters.PageSize)
+
+                .Take(queryParameters.PageSize)
+
+                .Select(p => new ProductResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    SKU = p.SKU,
+                    BasePrice = p.BasePrice
+                })
+
+                .ToListAsync();
+
+            return new PagedResult<ProductResponseDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = queryParameters.PageNumber,
+                PageSize = queryParameters.PageSize
+            };
+        }
+
     }
 }

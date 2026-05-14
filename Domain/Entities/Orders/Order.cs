@@ -48,10 +48,9 @@ public class Order : BaseEntity
 
     public void MarkAsPaid()
     {
-        if (Status == OrderStatus.Cancelled)
-            throw new InvalidOperationException("Cancelled order cannot be paid.");
-
         Status = OrderStatus.Paid;
+
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Complete()

@@ -88,12 +88,7 @@ namespace Application.Services
 
                 await _orderRepository.AddAsync(order);
 
-                foreach (var item in dto.Items)
-                {
-                    await _inventoryService.DeductStockAsync(
-                        item.ProductId,
-                        item.Quantity);
-                }
+         
 
                 await _unitOfWork.SaveChangesAsync();
 

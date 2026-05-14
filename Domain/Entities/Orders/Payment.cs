@@ -17,13 +17,28 @@ public class Payment : BaseEntity
     public Order Order { get; set; } = null!;
 
 
+    private Payment()
+    {
+    }
+
+    public Payment(
+        int orderId,
+        decimal amount)
+    {
+        OrderId = orderId;
+
+        Amount = amount;
+
+        Status = PaymentStatus.Pending;
+
+        CreatedAt = DateTime.UtcNow;
+    }
+
 
     public void MarkAsCompleted()
     {
-        if (Status == PaymentStatus.Completed)
-            throw new InvalidOperationException("Payment already completed.");
-
         Status = PaymentStatus.Completed;
+
         PaidAt = DateTime.UtcNow;
     }
 

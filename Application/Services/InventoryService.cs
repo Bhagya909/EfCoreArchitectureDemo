@@ -17,12 +17,16 @@ namespace Application.Services
 
         private readonly IInventoryRepository _inventoryRepository;
 
+        private readonly IChangeLogService _changeLogService;
+
         public InventoryService(
     IInventoryRepository inventoryRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IChangeLogService changeLogService)
         {
             _inventoryRepository = inventoryRepository;
             _unitOfWork = unitOfWork;
+            _changeLogService = changeLogService;
         }
 
         public async Task<InventoryResponseDto>
@@ -55,6 +59,13 @@ namespace Application.Services
             await _inventoryRepository
                 .AddTransactionAsync(transaction);
             await _unitOfWork.SaveChangesAsync();
+
+            await _changeLogService.LogAsync(
+            "INVENTORY_ADD",
+            "Inventory",
+            inventory.Id,
+            $"Quantity={dto.Quantity}",
+            $"Inventory updated for ProductId {dto.ProductId}.");
 
             return new InventoryResponseDto
             {

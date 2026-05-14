@@ -1,5 +1,6 @@
 ﻿using Application.Common;
 using Application.DTOs.Products;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Mappings;
@@ -16,10 +17,20 @@ namespace Application.Services
     {
         private readonly IProductRepository _productRepository;
 
+        private readonly IChangeLogService _changeLogService;
+
+        private readonly IUnitOfWork _unitOfWork;
+
         public ProductService(
-            IProductRepository productRepository)
+    IProductRepository productRepository,
+    IUnitOfWork unitOfWork,
+    IChangeLogService changeLogService)
         {
             _productRepository = productRepository;
+
+            _unitOfWork = unitOfWork;
+
+            _changeLogService = changeLogService;
         }
 
         public async Task<ProductResponseDto> CreateProductAsync(
@@ -41,6 +52,12 @@ namespace Application.Services
                 dto.BasePrice);
 
             await _productRepository.AddAsync(product);
+            await _changeLogService.LogAsync(
+            "CREATE",
+            "Product",
+            product.Id,
+            $"SKU={product.SKU}",
+            $"Product '{product.Name}' created.");
 
             return product.ToResponseDto();
         }
@@ -49,23 +66,9 @@ namespace Application.Services
     GetAllProductsAsync(
         ProductQueryParameters queryParameters)
         {
-            var (products, totalCount) =
-                await _productRepository.GetPagedAsync(
+            return await _productRepository
+                .GetPagedProjectedAsync(
                     queryParameters);
-
-            return new PagedResult<ProductResponseDto>
-            {
-                Items = products.Select(p =>
-                    p.ToResponseDto()),
-
-                TotalCount = totalCount,
-
-                PageNumber =
-                    queryParameters.PageNumber,
-
-                PageSize =
-                    queryParameters.PageSize
-            };
         }
 
         public async Task<ProductResponseDto?> GetProductByIdAsync(
