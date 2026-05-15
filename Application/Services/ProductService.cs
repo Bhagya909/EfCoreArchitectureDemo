@@ -58,7 +58,7 @@ namespace Application.Services
             product.Id,
             $"SKU={product.SKU}",
             $"Product '{product.Name}' created.");
-
+            await _unitOfWork.SaveChangesAsync();
             return product.ToResponseDto();
         }
 
@@ -96,6 +96,7 @@ namespace Application.Services
             }
 
             product.SoftDelete();
+            await _unitOfWork.SaveChangesAsync();
 
             return true;
         }

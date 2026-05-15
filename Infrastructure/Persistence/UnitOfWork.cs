@@ -27,6 +27,9 @@ namespace Infrastructure.Persistence
             if (_transaction is not null)
             {
                 await _transaction.CommitAsync();
+                await _transaction.DisposeAsync();
+
+                _transaction = null;
             }
         }
 
@@ -35,6 +38,9 @@ namespace Infrastructure.Persistence
             if (_transaction is not null)
             {
                 await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+
+                _transaction = null;
             }
         }
 

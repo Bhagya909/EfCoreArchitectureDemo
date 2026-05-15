@@ -51,6 +51,7 @@ public class Product : BaseEntity
             throw new ArgumentException("Price cannot be negative.");
 
         BasePrice = newPrice;
+        UpdatedAt = DateTime.UtcNow;
     }
 }
 

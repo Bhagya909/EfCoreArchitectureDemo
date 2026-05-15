@@ -58,7 +58,6 @@ namespace Application.Services
 
             await _inventoryRepository
                 .AddTransactionAsync(transaction);
-            await _unitOfWork.SaveChangesAsync();
 
             await _changeLogService.LogAsync(
             "INVENTORY_ADD",
@@ -66,6 +65,12 @@ namespace Application.Services
             inventory.Id,
             $"Quantity={dto.Quantity}",
             $"Inventory updated for ProductId {dto.ProductId}.");
+
+
+
+            await _unitOfWork.SaveChangesAsync();
+
+            
 
             return new InventoryResponseDto
             {
@@ -113,7 +118,7 @@ namespace Application.Services
                 .AddTransactionAsync(transaction);
 
             await _changeLogService.LogAsync(
-            "Inventory_Deducted",
+            "INVENTORY_DEDUCTED",
             "Inventory",
             inventory.Id,
             $"ProductId={productId}; Quantity={quantity}",

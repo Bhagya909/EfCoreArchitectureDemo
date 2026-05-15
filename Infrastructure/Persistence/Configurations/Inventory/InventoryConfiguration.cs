@@ -30,6 +30,6 @@ public class InventoryConfiguration : IEntityTypeConfiguration<InventoryNS.Inven
         builder.HasOne(i => i.Product)
             .WithOne(p => p.Inventory)
             .HasForeignKey<InventoryNS.Inventory>(i => i.ProductId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

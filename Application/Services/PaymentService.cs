@@ -93,7 +93,7 @@ namespace Application.Services
                         .AddAsync(payment);
 
                     await _changeLogService.LogAsync(
-                        "Payment_Completed",
+                        "PAYMENT_COMPLETED",
                         "Payment",
                         payment.Id,
                         $"OrderId={order.Id}",
@@ -148,6 +148,7 @@ namespace Application.Services
 
             payment.MarkAsFailed();
 
+            await _unitOfWork.SaveChangesAsync();
 
             return payment.ToResponseDto();
         }
