@@ -9,6 +9,11 @@ using Application.Services;
 using Infrastructure.Repositories;
 using Application.Interfaces;
 
+
+using Application.Interfaces.Upgrades;
+using Infrastructure.Upgrades;
+
+
 namespace Infrastructure.Extensions;
 
 public static class DependencyInjection
@@ -36,6 +41,12 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IChangeLogService, ChangeLogService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<IDataUpgrade,
+        GeneratePaymentReferenceNumbersUpgrade>();
+
+        services.AddScoped<IUpgradeRunner,
+            UpgradeRunner>();
 
         return services;
     }

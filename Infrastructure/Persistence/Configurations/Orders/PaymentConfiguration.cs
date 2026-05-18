@@ -32,5 +32,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .WithOne(o => o.Payment)
             .HasForeignKey<Payment>(p => p.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(p => p.ReferenceNumber)
+        .HasMaxLength(100);
     }
 }

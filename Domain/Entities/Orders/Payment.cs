@@ -14,6 +14,8 @@ public class Payment : BaseEntity
 
     public byte[] RowVersion { get; set; } = default!;
 
+    public string? ReferenceNumber { get; private set; }
+
     public Order Order { get; set; } = null!;
 
 
@@ -49,4 +51,16 @@ public class Payment : BaseEntity
 
         Status = PaymentStatus.Failed;
     }
+
+    public void SetReferenceNumber(string referenceNumber)
+    {
+        if (string.IsNullOrWhiteSpace(referenceNumber))
+        {
+            throw new ArgumentException(
+                "Reference number cannot be empty.");
+        }
+
+        ReferenceNumber = referenceNumber;
+    }
+
 }
