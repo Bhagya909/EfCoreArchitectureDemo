@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,10 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Inventory\" />
     <Folder Include="Controllers\Payments\" />
-    <Folder Include="Controllers\Orders\" />
-    <Folder Include="Controllers\Products\" />
     <Folder Include="Middleware\" />
     <Folder Include="Extensions\" />
     <Folder Include="Configurations\" />
