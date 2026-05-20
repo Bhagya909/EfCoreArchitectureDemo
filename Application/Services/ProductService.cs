@@ -53,13 +53,16 @@ namespace Application.Services
 
             await _productRepository.AddAsync(product);
             await _changeLogService.LogAsync(
-            "CREATE",
-            "Product",
-            product.Id,
-            $"SKU={product.SKU}",
-            $"Product '{product.Name}' created.");
+                actionType: "PRODUCT_CREATED",
+                entityName: "Product",
+                referenceId: product.Id,
+                description: $"Product '{product.Name}' created with SKU {product.SKU}.",
+                rawData: $"SKU={product.SKU}; Price={product.BasePrice}");
+
             await _unitOfWork.SaveChangesAsync();
+
             return product.ToResponseDto();
+
         }
 
         public async Task<PagedResult<ProductResponseDto>>
@@ -99,6 +102,91 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             return true;
+        }
+        public async Task<int> BulkIncreasePricesAsync(
+    BulkPriceUpdateDto dto)
+        {
+            if (dto.PercentageIncrease <= 0)
+            {
+                throw new Exception(
+                    "Percentage increase must be greater than zero.");
+            }
+
+            if (dto.PercentageIncrease > 200)
+            {
+                throw new Exception(
+                    "Percentage increase exceeds allowed operational limit.");
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var affectedRows =
+                    await _productRepository
+                        .BulkIncreasePricesAsync(
+                            dto.PercentageIncrease);
+
+                await _changeLogService.LogAsync(
+                    actionType: "BULK_PRICE_UPDATE",
+                    entityName: "Product",
+                    referenceId: null,
+                    description: $"{affectedRows} products updated through bulk price operation.",
+                    rawData: $"PercentageIncrease={dto.PercentageIncrease}",
+                    requestAiSummary: true
+                    );
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return affectedRows;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+
+                throw;
+            }
+        }
+        public async Task<int> BulkArchiveProductsAsync(
+    BulkArchiveProductsDto dto)
+        {
+            if (dto.MaxPrice < 0)
+            {
+                throw new Exception(
+                    "Max price cannot be negative.");
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var affectedRows =
+                    await _productRepository
+                        .BulkArchiveProductsAsync(
+                            dto.MaxPrice);
+
+                await _changeLogService.LogAsync(
+                    actionType: "BULK_PRODUCT_ARCHIVE",
+                    entityName: "Product",
+                    referenceId: null,
+                    description: $"{affectedRows} products archived through bulk operation.",
+                    rawData: $"MaxPrice={dto.MaxPrice}",
+                    requestAiSummary: true);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return affectedRows;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+
+                throw;
+            }
         }
     }
 }

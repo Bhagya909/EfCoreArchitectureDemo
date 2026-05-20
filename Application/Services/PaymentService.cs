@@ -43,8 +43,8 @@ namespace Application.Services
             _changeLogService = changeLogService;
         }
 
-    public async Task<PaymentResponseDto>
-    CompletePaymentAsync(int orderId)
+        public async Task<PaymentResponseDto>
+        CompletePaymentAsync(int orderId)
         {
             var retryCount = 0;
 
@@ -93,11 +93,11 @@ namespace Application.Services
                         .AddAsync(payment);
 
                     await _changeLogService.LogAsync(
-                        "PAYMENT_COMPLETED",
-                        "Payment",
-                        payment.Id,
-                        $"OrderId={order.Id}",
-                        $"Payment completed for Order {order.Id}");
+                        actionType: "PAYMENT_COMPLETED",
+                        entityName: "Payment",
+                        referenceId: payment.Id,
+                        description: $"Payment completed for Order {order.Id}.",
+                        rawData: $"OrderId={order.Id}; Amount={order.TotalAmount}");
 
                     await _unitOfWork
                         .SaveChangesAsync();

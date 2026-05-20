@@ -24,5 +24,11 @@ namespace Application.Interfaces.Repositories
     GetPagedProjectedAsync(
         ProductQueryParameters queryParameters);
 
+     Task<int> BulkIncreasePricesAsync(
+        decimal percentageIncrease);
+
+     Task<int> BulkArchiveProductsAsync(
+            decimal maxPrice);
+
     }
 }

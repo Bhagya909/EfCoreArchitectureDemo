@@ -19,19 +19,29 @@ namespace Application.Services
 
         private readonly IChangeLogService _changeLogService;
 
+        private readonly IProductRepository _productRepository;
+
         public InventoryService(
     IInventoryRepository inventoryRepository,
     IUnitOfWork unitOfWork,
-    IChangeLogService changeLogService)
+    IChangeLogService changeLogService,
+    IProductRepository productRepository)
         {
             _inventoryRepository = inventoryRepository;
             _unitOfWork = unitOfWork;
             _changeLogService = changeLogService;
+            _productRepository = productRepository;
         }
 
         public async Task<InventoryResponseDto>
             AddInventoryAsync(CreateInventoryDto dto)
         {
+            var product = await _productRepository
+                .GetByIdAsync(dto.ProductId);
+
+            if (product is null || product.IsDeleted)
+                throw new InvalidOperationException(
+                    "Cannot add inventory for an archived product.");
             InventoryValidator.ValidateInventory(dto);
             var inventory =
                 await _inventoryRepository
@@ -60,17 +70,17 @@ namespace Application.Services
                 .AddTransactionAsync(transaction);
 
             await _changeLogService.LogAsync(
-            "INVENTORY_ADD",
-            "Inventory",
-            inventory.Id,
-            $"Quantity={dto.Quantity}",
-            $"Inventory updated for ProductId {dto.ProductId}.");
+                actionType: "INVENTORY_ADD",
+                entityName: "Inventory",
+                referenceId: inventory.Id,
+                description: $"Inventory updated for ProductId {dto.ProductId}.",
+                rawData: $"Quantity={dto.Quantity}");
 
 
 
             await _unitOfWork.SaveChangesAsync();
 
-            
+
 
             return new InventoryResponseDto
             {
@@ -118,11 +128,11 @@ namespace Application.Services
                 .AddTransactionAsync(transaction);
 
             await _changeLogService.LogAsync(
-            "INVENTORY_DEDUCTED",
-            "Inventory",
-            inventory.Id,
-            $"ProductId={productId}; Quantity={quantity}",
-            $"Inventory deducted for ProductId {productId}");
+                actionType: "INVENTORY_DEDUCTED",
+                entityName: "Inventory",
+                referenceId: inventory.Id,
+                description: $"Inventory deducted for ProductId {productId}.",
+                rawData: $"ProductId={productId}; Quantity={quantity}");
 
 
         }

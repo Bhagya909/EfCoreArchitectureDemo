@@ -35,7 +35,7 @@ namespace Application.Services
             _changeLogService = changeLogService;
         }
 
-       
+
 
         public async Task<OrderResponseDto>
     CreateOrderAsync(CreateOrderDto dto)
@@ -93,11 +93,11 @@ namespace Application.Services
                 await _orderRepository.AddAsync(order);
 
                 await _changeLogService.LogAsync(
-                "ORDER_CREATED",
-                "Order",
-                order.Id,
-                $"CustomerId={dto.CustomerId}",
-                $"Order created with total {totalAmount}");
+                    actionType: "ORDER_CREATED",
+                    entityName: "Order",
+                    referenceId: order.Id,
+                    description: $"Order created for CustomerId {dto.CustomerId} with total {totalAmount}.",
+                    rawData: $"CustomerId={dto.CustomerId}; Total={totalAmount}");
 
                 await _unitOfWork.SaveChangesAsync();
 

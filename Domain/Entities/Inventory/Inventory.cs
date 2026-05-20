@@ -16,10 +16,6 @@ public class Inventory : BaseEntity
 
     public Product Product { get; set; } = null!;
 
-    // Navigation Property
-    public ICollection<InventoryTransaction> InventoryTransactions
-    { get; private set; }
-        = new List<InventoryTransaction>();
 
 
     // EF Core constructor

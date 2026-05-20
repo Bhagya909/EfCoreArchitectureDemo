@@ -153,5 +153,41 @@ namespace Infrastructure.Repositories
                 PageSize = queryParameters.PageSize
             };
         }
+        public async Task<int> BulkIncreasePricesAsync(
+            decimal percentageIncrease)
+        {
+            var multiplier =
+                1 + (percentageIncrease / 100);
+
+            return await _context.Products
+                .Where(p => !p.IsDeleted)
+                .ExecuteUpdateAsync(setters =>
+                    setters
+                        .SetProperty(
+                            p => p.BasePrice,
+                            p => p.BasePrice * multiplier)
+
+                        .SetProperty(
+                            p => p.UpdatedAt,
+                            DateTime.UtcNow));
+        }
+
+        public async Task<int> BulkArchiveProductsAsync(
+            decimal maxPrice)
+        {
+            return await _context.Products
+                .Where(p =>
+                    !p.IsDeleted &&
+                    p.BasePrice <= maxPrice)
+                .ExecuteUpdateAsync(setters =>
+                    setters
+                        .SetProperty(
+                            p => p.IsDeleted,
+                            true)
+
+                        .SetProperty(
+                            p => p.UpdatedAt,
+                            DateTime.UtcNow));
+        }
     }
 }

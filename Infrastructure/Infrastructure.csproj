@@ -9,11 +9,8 @@
 
   <ItemGroup>
     <Compile Remove="Persistence\Migrations\**" />
-    <Compile Remove="Services\**" />
     <EmbeddedResource Remove="Persistence\Migrations\**" />
-    <EmbeddedResource Remove="Services\**" />
     <None Remove="Persistence\Migrations\**" />
-    <None Remove="Services\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
+    <PackageReference Include="Mscc.GenerativeAI" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Persistence\Interceptors\" />
     <Folder Include="Persistence\Seed\" />
   </ItemGroup>
 

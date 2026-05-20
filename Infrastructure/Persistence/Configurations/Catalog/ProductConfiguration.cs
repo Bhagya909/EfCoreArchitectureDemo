@@ -1,8 +1,8 @@
 ﻿using Domain.Entities.Catalog;
 using Domain.Entities.Inventory;
-using InventoryNS = Domain.Entities.Inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using InventoryNS = Domain.Entities.Inventory;
 
 namespace Infrastructure.Persistence.Configurations.Catalog;
 
@@ -23,7 +23,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(100);
 
         builder.HasIndex(p => p.SKU)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.Property(p => p.BasePrice)
             .HasPrecision(18, 2);
