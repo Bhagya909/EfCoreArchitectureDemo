@@ -34,6 +34,18 @@ public class Product : BaseEntity
         string sku,
         decimal basePrice)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException(
+                "Product name cannot be empty.");
+
+        if (string.IsNullOrWhiteSpace(sku))
+            throw new ArgumentException(
+                "SKU cannot be empty.");
+
+        if (basePrice <= 0)
+            throw new ArgumentException(
+                "Price must be greater than zero.");
+
         Name = name;
         SKU = sku;
         BasePrice = basePrice;
@@ -47,10 +59,33 @@ public class Product : BaseEntity
 
     public void UpdatePrice(decimal newPrice)
     {
-        if (newPrice < 0)
-            throw new ArgumentException("Price cannot be negative.");
+        if (newPrice <= 0)
+            throw new ArgumentException("Price must be greater than zero");
 
         BasePrice = newPrice;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(
+    string name,
+    string sku,
+    decimal basePrice)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException(
+                "Product name cannot be empty.");
+
+        if (string.IsNullOrWhiteSpace(sku))
+            throw new ArgumentException(
+                "SKU cannot be empty.");
+
+        if (basePrice <= 0)
+            throw new ArgumentException(
+                "Price must be greter than zero.");
+
+        Name = name;
+        SKU = sku;
+        BasePrice = basePrice;
         UpdatedAt = DateTime.UtcNow;
     }
 }

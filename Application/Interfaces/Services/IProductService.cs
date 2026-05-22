@@ -18,6 +18,10 @@ namespace Application.Interfaces.Services
 
         Task<ProductResponseDto?> GetProductByIdAsync(int id);
 
+        Task<ProductResponseDto?> UpdateProductAsync(
+            int id,
+            UpdateProductDto dto);
+
         Task<bool> SoftDeleteProductAsync(int id);
         Task<int> BulkIncreasePricesAsync(
         BulkPriceUpdateDto dto);

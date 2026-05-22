@@ -99,6 +99,13 @@ namespace Application.Services
             }
 
             product.SoftDelete();
+            await _changeLogService.LogAsync(
+                actionType: "PRODUCT_DELETED",
+                entityName: "Product",
+                referenceId: product.Id,
+                description:
+                    $"Product '{product.Name}' " +
+                    $"with SKU {product.SKU} was soft deleted.");
             await _unitOfWork.SaveChangesAsync();
 
             return true;
@@ -187,6 +194,57 @@ namespace Application.Services
 
                 throw;
             }
+        }
+
+        public async Task<ProductResponseDto?> UpdateProductAsync(
+    int id,
+    UpdateProductDto dto)
+        {
+            var product =
+                await _productRepository.GetByIdAsync(id);
+
+            if (product is null)
+            {
+                return null;
+            }
+
+            // Check if new SKU conflicts with another product
+            if (product.SKU != dto.SKU)
+            {
+                var existingWithSku =
+                    await _productRepository
+                        .GetBySkuAsync(dto.SKU);
+
+                if (existingWithSku is not null
+                    && existingWithSku.Id != id)
+                {
+                    throw new InvalidOperationException(
+                        $"Product with SKU '{dto.SKU}' already exists.");
+                }
+            }
+
+            product.UpdateDetails(
+                dto.Name,
+                dto.SKU,
+                dto.BasePrice);
+
+            await _changeLogService.LogAsync(
+                actionType: "PRODUCT_UPDATED",
+                entityName: "Product",
+                referenceId: product.Id,
+                description:
+                    $"Product '{product.Name}' " +
+                    $"updated with SKU {product.SKU} " +
+                    $"and price {product.BasePrice}.",
+                rawData:
+                    $"Name={dto.Name}; " +
+                    $"SKU={dto.SKU}; " +
+                    $"Price={dto.BasePrice}",
+                requestAiSummary: true);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return product.ToResponseDto();
         }
     }
 }
