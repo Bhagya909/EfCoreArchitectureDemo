@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Catalog;
+﻿using Domain.Entities;
+using Domain.Entities.Catalog;
 using Domain.Entities.Inventory;
 using Domain.Entities.Logging;
 using Domain.Entities.Orders;
@@ -40,5 +41,26 @@ public class RetailDbContext : DbContext
             typeof(RetailDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+    {
+        foreach (var entry in ChangeTracker
+            .Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = DateTime.UtcNow;
+            }
+
+            if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        return await base.SaveChangesAsync(
+            cancellationToken);
     }
 }

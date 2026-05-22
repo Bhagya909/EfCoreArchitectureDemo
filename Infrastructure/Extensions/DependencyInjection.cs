@@ -4,6 +4,7 @@ using Application.Interfaces.Services;
 using Application.Interfaces.Upgrades;
 using Application.Services;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Configurations.Logging;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -44,7 +45,12 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IChangeLogService, ChangeLogService>();
+
+        services.Configure<GeminiSettings>(
+                configuration.GetSection(GeminiSettings.SectionName));
         services.AddScoped<IAiSummaryService, GeminiSummaryService>();
+        services.AddScoped<IAiEnrichmentProcessor, AiEnrichmentProcessor>();
+        services.AddHostedService<AiEnrichmentBackgroundService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IDataUpgrade,
@@ -52,6 +58,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUpgradeRunner,
             UpgradeRunner>();
+
+
 
         return services;
     }

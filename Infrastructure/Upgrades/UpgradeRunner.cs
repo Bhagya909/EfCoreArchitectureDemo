@@ -13,7 +13,7 @@ namespace Infrastructure.Upgrades
         private readonly IUnitOfWork _unitOfWork;
 
         private readonly IChangeLogService _changeLogService;
-        
+
         private readonly RetailDbContext _context;
 
         public UpgradeRunner(
@@ -40,7 +40,7 @@ namespace Infrastructure.Upgrades
                         .AnyAsync(log =>
                             log.ActionType == "UPGRADE_EXECUTED"
                             && log.RawData ==
-                                $"Upgrade={upgrade.Name}");
+                            $"Upgrade={upgrade.Name}");
 
                 if (alreadyExecuted)
                 {
@@ -54,11 +54,13 @@ namespace Infrastructure.Upgrades
                     await upgrade.ExecuteAsync();
 
                     await _changeLogService.LogAsync(
-                        "UPGRADE_EXECUTED",
-                        "DatabaseUpgrade",
-                        null,
-                        $"Upgrade={upgrade.Name}",
-                        $"Upgrade '{upgrade.Name}' executed successfully.");
+                        actionType: "UPGRADE_EXECUTED",
+                        entityName: "DatabaseUpgrade",
+                        referenceId: null,
+                        description:
+                            $"Upgrade '{upgrade.Name}' executed successfully.",
+                        rawData:
+                            $"Upgrade={upgrade.Name}");
 
                     await _unitOfWork.SaveChangesAsync();
 

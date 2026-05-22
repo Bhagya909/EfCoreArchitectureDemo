@@ -29,8 +29,6 @@ namespace Infrastructure.Upgrades
                 payment.SetReferenceNumber(
                     $"PAY-{payment.Id:D6}");
             }
-
-            await _context.SaveChangesAsync();
         }
     }
 }
