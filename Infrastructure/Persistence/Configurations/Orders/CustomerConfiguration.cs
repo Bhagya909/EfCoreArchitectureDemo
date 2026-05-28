@@ -21,9 +21,12 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasMaxLength(255);
 
         builder.HasIndex(c => c.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.HasQueryFilter(c => !c.IsDeleted);
+        // In CustomerConfiguration
+
 
         builder.HasMany(c => c.Orders)
             .WithOne(o => o.Customer)

@@ -1,15 +1,33 @@
+using API.Middleware;
 using Application.Interfaces.Upgrades;
 using Infrastructure.Extensions;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Controllers
 builder.Services.AddControllers();
 
+builder.Services.AddDbContext<RetailDbContext>(
+    (serviceProvider, options) =>
+    {
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString(
+                "DefaultConnection"));
+
+        options.AddInterceptors(
+            serviceProvider.GetRequiredService<
+                AuditSaveChangesInterceptor>());
+    });
+
+// Infrastructure — repositories, services, DbContext
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -20,35 +38,66 @@ builder.Services.AddCors(options =>
     });
 });
 
+// ProblemDetails
+builder.Services.AddProblemDetails();
+
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Retail Project API",
+        Version = "v1",
+        Description =
+            "A production-oriented retail backend demonstrating " +
+            "Clean Architecture, EF Core advanced features, " +
+            "database evolution, and AI-enhanced observability."
+    });
 
-builder.Services.AddSwaggerGen();
+    options.TagActionsBy(api =>
+        new[] { api.GroupName ?? api.ActionDescriptor.RouteValues["controller"] });
+
+    options.DocInclusionPredicate((_, _) => true);
+
+    var xmlFile =
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath =
+        Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath);
+});
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// Run migrations and upgrade pipeline on startup — skip in Testing
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-
-    var context =
-        services.GetRequiredService<RetailDbContext>();
-
+    var context = services.GetRequiredService<RetailDbContext>();
     await context.Database.MigrateAsync();
-
-    var upgradeRunner =
-        services.GetRequiredService<IUpgradeRunner>();
-
+    var upgradeRunner = services.GetRequiredService<IUpgradeRunner>();
     await upgradeRunner.RunUpgradesAsync();
 }
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
+// Global exception middleware — must be first
+app.UseMiddleware<ExceptionMiddleware>();
 
-    app.UseSwaggerUI();
-}
+// Swagger
+app.UseSwagger();
+
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = "swagger";
+    options.SwaggerEndpoint("v1/swagger.json", "RetailProject API v1");
+    options.DocumentTitle = "Retail Project API";
+    options.DisplayRequestDuration();
+});
+
+// Root redirect to Swagger
+app.MapGet("/", () => Results.Redirect("swagger"));
 
 if (!app.Environment.IsDevelopment())
 {
@@ -56,9 +105,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

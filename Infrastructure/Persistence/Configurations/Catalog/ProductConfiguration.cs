@@ -36,7 +36,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasOne(p => p.Inventory)
             .WithOne(i => i.Product)
-            .HasForeignKey<InventoryNS.Inventory>(i => i.ProductId);
+            .HasForeignKey<InventoryNS.Inventory>(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.InventoryTransactions)
             .WithOne(t => t.Product)

@@ -2,6 +2,7 @@
 {
     public class BulkPriceUpdateDto
     {
-        public decimal PercentageIncrease { get; set; }
+        public decimal PercentageChange { get; set; }
+        public int? CategoryId { get; set; }
     }
 }

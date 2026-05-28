@@ -18,6 +18,10 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
         builder.Property(oi => oi.UnitPrice)
             .HasPrecision(18, 2);
 
+        builder.HasQueryFilter(oi =>
+            !oi.Order.IsDeleted &&
+            !oi.Product.IsDeleted);
+
         builder.HasOne(oi => oi.Order)
             .WithMany(o => o.OrderItems)
             .HasForeignKey(oi => oi.OrderId)

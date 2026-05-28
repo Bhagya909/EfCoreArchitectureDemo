@@ -2,50 +2,51 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Mappings;
 using Application.Validators;
 using Domain.Entities.Inventory;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Application.Services
+namespace Application.Services;
+
+public class InventoryService : IInventoryService
 {
-    public class InventoryService : IInventoryService
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IInventoryRepository _inventoryRepository;
+    private readonly IChangeLogService _changeLogService;
+    private readonly IProductRepository _productRepository;
+
+    public InventoryService(
+        IInventoryRepository inventoryRepository,
+        IUnitOfWork unitOfWork,
+        IChangeLogService changeLogService,
+        IProductRepository productRepository)
     {
-        private readonly IUnitOfWork _unitOfWork;
+        _inventoryRepository = inventoryRepository;
+        _unitOfWork = unitOfWork;
+        _changeLogService = changeLogService;
+        _productRepository = productRepository;
+    }
 
-        private readonly IInventoryRepository _inventoryRepository;
+    public async Task<InventoryResponseDto> AddInventoryAsync(
+        CreateInventoryDto dto)
+    {
+        // FIX 3 — validate DTO before any DB call
+        InventoryValidator.ValidateInventory(dto);
 
-        private readonly IChangeLogService _changeLogService;
+        var product = await _productRepository
+            .GetByIdAsync(dto.ProductId);
 
-        private readonly IProductRepository _productRepository;
+        if (product is null || product.IsDeleted)
+            throw new InvalidOperationException(
+                "Cannot add inventory for an archived product.");
 
-        public InventoryService(
-    IInventoryRepository inventoryRepository,
-    IUnitOfWork unitOfWork,
-    IChangeLogService changeLogService,
-    IProductRepository productRepository)
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
         {
-            _inventoryRepository = inventoryRepository;
-            _unitOfWork = unitOfWork;
-            _changeLogService = changeLogService;
-            _productRepository = productRepository;
-        }
-
-        public async Task<InventoryResponseDto>
-            AddInventoryAsync(CreateInventoryDto dto)
-        {
-            var product = await _productRepository
-                .GetByIdAsync(dto.ProductId);
-
-            if (product is null || product.IsDeleted)
-                throw new InvalidOperationException(
-                    "Cannot add inventory for an archived product.");
-            InventoryValidator.ValidateInventory(dto);
-            var inventory =
-                await _inventoryRepository
-                    .GetByProductIdAsync(dto.ProductId);
+            var inventory = await _inventoryRepository
+                .GetByProductIdAsync(dto.ProductId);
 
             if (inventory is null)
             {
@@ -72,69 +73,142 @@ namespace Application.Services
             await _changeLogService.LogAsync(
                 actionType: "INVENTORY_ADD",
                 entityName: "Inventory",
-                referenceId: inventory.Id,
-                description: $"Inventory updated for ProductId {dto.ProductId}.",
-                rawData: $"Quantity={dto.Quantity}");
-
-
+                referenceId: dto.ProductId,
+                description:
+                    $"Stock added for product " +
+                    $"'{product.Name}'. " +
+                    $"Quantity: {dto.Quantity}.",
+                rawData:
+                    $"ProductId={dto.ProductId}; " +
+                    $"Quantity={dto.Quantity}");
 
             await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
 
-
-
-            return new InventoryResponseDto
-            {
-                ProductId = inventory.ProductId,
-                Quantity = inventory.Quantity,
-                LastUpdated = inventory.LastUpdated
-            };
+            return inventory.ToResponseDto(product);
         }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
 
-        public async Task<bool> ValidateStockAsync(
+    public async Task<bool> ValidateStockAsync(
+        int productId,
+        int quantity)
+    {
+        if (productId <= 0)
+            throw new ArgumentException(
+                "Invalid product id.");
+
+        if (quantity <= 0)
+            throw new ArgumentException(
+                "Quantity must be greater than zero.");
+
+        var inventory = await _inventoryRepository
+            .GetByProductIdReadOnlyAsync(productId);
+
+        return inventory is not null
+            && inventory.Quantity >= quantity;
+    }
+
+    // Intentionally no SaveChangesAsync
+    // Caller (PaymentService) owns the transaction
+    public async Task DeductStockAsync(
+        int productId,
+        int quantity)
+    {
+        var inventory = await _inventoryRepository
+            .GetByProductIdAsync(productId);
+
+        if (inventory is null)
+            throw new InvalidOperationException(
+                "Inventory not found.");
+
+        inventory.RemoveStock(quantity);
+
+        var transaction = new InventoryTransaction(
+            productId,
+            -quantity,
+            InventoryTransactionType.OUT,
+            "Stock Deducted");
+
+        await _inventoryRepository
+            .AddTransactionAsync(transaction);
+
+        await _changeLogService.LogAsync(
+            actionType: "INVENTORY_DEDUCTED",
+            entityName: "Inventory",
+            referenceId: inventory.ProductId,
+            description:
+                $"Inventory deducted for " +
+                $"ProductId {productId}.",
+            rawData:
+                $"ProductId={productId}; " +
+                $"Quantity={quantity}");
+    }
+
+    public async Task<InventoryResponseDto?>
+        GetInventoryByProductIdAsync(int productId)
+    {
+        var inventory = await _inventoryRepository
+            .GetByProductIdReadOnlyAsync(productId);
+
+        if (inventory is null)
+            return null;
+
+        var product = await _productRepository
+            .GetByIdReadOnlyAsync(productId);
+
+        if (product is null)
+            throw new KeyNotFoundException(
+                $"Product {productId} not found.");
+
+        return inventory.ToResponseDto(product);
+    }
+
+    // FIX 2 — pass top to repository
+    public async Task<List<InventoryTransactionResponseDto>>
+        GetTransactionsByProductIdAsync(
             int productId,
-            int quantity)
-        {
-            var inventory =
-                await _inventoryRepository
-                    .GetByProductIdAsync(productId);
+            int top = 50)
+    {
+        var product = await _productRepository
+            .GetByIdReadOnlyAsync(productId);
 
-            return inventory is not null
-                && inventory.Quantity >= quantity;
-        }
+        if (product is null)
+            throw new KeyNotFoundException(
+                $"Product {productId} not found.");
 
-        public async Task DeductStockAsync(
-    int productId,
-    int quantity)
-        {
-            var inventory =
-                await _inventoryRepository
-                    .GetByProductIdAsync(productId);
+        var transactions = await _inventoryRepository
+            .GetTransactionsByProductIdAsync(productId, top);
 
-            if (inventory is null)
-            {
-                throw new Exception(
-                    "Inventory not found.");
-            }
+        return transactions;
+    }
 
-            inventory.RemoveStock(quantity);
+    public async Task<List<InventoryResponseDto>>
+        GetLowStockAsync(int threshold)
+    {
+        var inventories = await _inventoryRepository
+            .GetLowStockAsync(threshold);
 
-            var transaction = new InventoryTransaction(
-                productId,
-                quantity,
-                InventoryTransactionType.OUT,
-                "Stock Deducted");
+        return inventories;
+    }
 
-            await _inventoryRepository
-                .AddTransactionAsync(transaction);
+    public async Task<List<InventoryResponseDto>>
+        GetOutOfStockAsync()
+    {
+        var inventories = await _inventoryRepository
+            .GetOutOfStockAsync();
 
-            await _changeLogService.LogAsync(
-                actionType: "INVENTORY_DEDUCTED",
-                entityName: "Inventory",
-                referenceId: inventory.Id,
-                description: $"Inventory deducted for ProductId {productId}.",
-                rawData: $"ProductId={productId}; Quantity={quantity}");
+        return inventories;
+    }
 
-
-        }
+    public async Task<InventorySummaryDto> GetSummaryAsync(
+        int lowStockThreshold = 10)
+    {
+        return await _inventoryRepository
+            .GetSummaryAsync(lowStockThreshold);
     }
 }

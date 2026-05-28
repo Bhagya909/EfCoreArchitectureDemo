@@ -4,14 +4,10 @@ namespace Domain.Entities.Logging;
 
 public class ChangeLog : BaseEntity
 {
-    public string ActionType { get; set; } = null!;
-
-    public string? EntityName { get; set; }
-
-    public int? ReferenceId { get; set; }
-
-    public string? RawData { get; set; }
-
+    public string ActionType { get; private set; } = null!;
+    public string? EntityName { get; private set; }
+    public int? ReferenceId { get; private set; }
+    public string? RawData { get; private set; }
     public string Description { get; private set; } = null!;
 
     public LogSource LogSource { get; private set; }

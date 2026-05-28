@@ -1,22 +1,22 @@
-﻿using Application.DTOs.Inventory;
+using Application.DTOs.Inventory;
+using Domain.Entities.Catalog;
 using Domain.Entities.Inventory;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Application.Mappings
+namespace Application.Mappings;
+
+public static class InventoryMappings
 {
-    public static class InventoryMappings
+    public static InventoryResponseDto ToResponseDto(
+        this Inventory inventory,
+        Product product)
     {
-        public static InventoryResponseDto ToResponseDto(
-            this Inventory inventory)
+        return new InventoryResponseDto
         {
-            return new InventoryResponseDto
-            {
-                ProductId = inventory.ProductId,
-                Quantity = inventory.Quantity,
-                LastUpdated = inventory.LastUpdated
-            };
-        }
+            ProductId = inventory.ProductId,
+            ProductName = product.Name,
+            SKU = product.SKU,
+            Quantity = inventory.Quantity,
+            LastUpdated = inventory.LastUpdated
+        };
     }
 }

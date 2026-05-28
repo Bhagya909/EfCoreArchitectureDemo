@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Application.DTOs.Inventory;
 
-namespace Application.DTOs.Inventory
+public class InventoryResponseDto
 {
-    public class InventoryResponseDto
-    {
-        public int ProductId { get; set; }
-
-        public int Quantity { get; set; }
-
-        public DateTime LastUpdated { get; set; }
-    }
+    public int ProductId { get; set; }
+    public string ProductName { get; set; } = null!;
+    public string SKU { get; set; } = null!;
+    public int Quantity { get; set; }
+    public DateTime LastUpdated { get; set; }
 }

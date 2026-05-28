@@ -22,16 +22,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddScoped<AuditSaveChangesInterceptor>();
-        services.AddDbContext<RetailDbContext>(
-    (serviceProvider, options) =>
-    {
-        options.UseSqlServer(
-            configuration.GetConnectionString("DefaultConnection"));
 
-        options.AddInterceptors(
-            serviceProvider.GetRequiredService<
-                AuditSaveChangesInterceptor>());
-    });
         services.AddScoped<IProductRepository, ProductRepository>();
 
         services.AddScoped<IProductService, ProductService>();
@@ -56,10 +47,17 @@ public static class DependencyInjection
         services.AddScoped<IDataUpgrade,
         GeneratePaymentReferenceNumbersUpgrade>();
 
+        services.AddScoped<IDataUpgrade,
+        BackfillAiSummaryStatusUpgrade>();
+
         services.AddScoped<IUpgradeRunner,
             UpgradeRunner>();
 
-
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        // Category
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICategoryService, CategoryService>();
 
         return services;
     }

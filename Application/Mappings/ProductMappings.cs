@@ -16,7 +16,8 @@ namespace Application.Mappings
                 Id = product.Id,
                 Name = product.Name,
                 SKU = product.SKU,
-                BasePrice = product.BasePrice
+                BasePrice = product.BasePrice,
+                RowVersion = product.RowVersion
             };
         }
     }

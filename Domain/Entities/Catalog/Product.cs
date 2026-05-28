@@ -5,23 +5,20 @@ namespace Domain.Entities.Catalog;
 
 public class Product : BaseEntity
 {
-    public string Name { get; set; } = null!;
+    public string Name { get; private set; } = null!;
+    public string SKU { get; private set; } = null!;
+    public decimal BasePrice { get; private set; }
+    public byte[] RowVersion { get; private set; } = default!;
 
-    public string SKU { get; set; } = null!;
+    public Inventory.Inventory? Inventory { get; private set; }
 
-    public decimal BasePrice { get; set; }
-
-    public byte[] RowVersion { get; set; } = default!;
-
-    public Inventory.Inventory? Inventory { get; set; }
-
-    public ICollection<ProductCategory> ProductCategories { get; set; }
+    public ICollection<ProductCategory> ProductCategories { get; private set; }
         = new List<ProductCategory>();
 
-    public ICollection<OrderItem> OrderItems { get; set; }
+    public ICollection<OrderItem> OrderItems { get; private set; }
         = new List<OrderItem>();
 
-    public ICollection<InventoryTransaction> InventoryTransactions { get; set; }
+    public ICollection<InventoryTransaction> InventoryTransactions { get; private set; }
         = new List<InventoryTransaction>();
 
 
@@ -60,7 +57,7 @@ public class Product : BaseEntity
     public void UpdatePrice(decimal newPrice)
     {
         if (newPrice <= 0)
-            throw new ArgumentException("Price must be greater than zero");
+            throw new ArgumentException("Price must be greater than zero.");
 
         BasePrice = newPrice;
         UpdatedAt = DateTime.UtcNow;
@@ -81,12 +78,20 @@ public class Product : BaseEntity
 
         if (basePrice <= 0)
             throw new ArgumentException(
-                "Price must be greter than zero.");
+                "Price must be greater than zero.");
 
         Name = name;
         SKU = sku;
         BasePrice = basePrice;
         UpdatedAt = DateTime.UtcNow;
+    }
+    public void SetRowVersion(byte[] rowVersion)
+    {
+        if (rowVersion is null || rowVersion.Length == 0)
+            throw new ArgumentException(
+                "RowVersion cannot be empty.");
+
+        RowVersion = rowVersion;
     }
 }
 

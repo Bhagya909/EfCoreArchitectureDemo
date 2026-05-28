@@ -1,8 +1,5 @@
 ﻿using Application.DTOs.Payments;
 using Domain.Entities.Orders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Mappings
 {
@@ -14,9 +11,11 @@ namespace Application.Mappings
             return new PaymentResponseDto
             {
                 PaymentId = payment.Id,
+                OrderId = payment.OrderId,
                 Status = payment.Status.ToString(),
                 Amount = payment.Amount,
-                PaidAt = payment.PaidAt
+                PaidAt = payment.PaidAt,
+                ReferenceNumber = payment.ReferenceNumber
             };
         }
     }

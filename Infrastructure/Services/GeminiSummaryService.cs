@@ -23,6 +23,24 @@ public class GeminiSummaryService : IAiSummaryService
     public async Task<string> GenerateSummaryAsync(
         ChangeLog changeLog)
     {
+        if (string.IsNullOrWhiteSpace(_settings.ApiKey))
+        {
+            _logger.LogWarning(
+                "Gemini API key is missing. Using fallback summary for log {LogId}.",
+                changeLog.Id);
+
+            return changeLog.Description;
+        }
+
+        if (string.IsNullOrWhiteSpace(_settings.Model))
+        {
+            _logger.LogWarning(
+                "Gemini model is missing. Using fallback summary for log {LogId}.",
+                changeLog.Id);
+
+            return changeLog.Description;
+        }
+
         _logger.LogInformation(
             "Calling Gemini for log {LogId} - {ActionType}",
             changeLog.Id,

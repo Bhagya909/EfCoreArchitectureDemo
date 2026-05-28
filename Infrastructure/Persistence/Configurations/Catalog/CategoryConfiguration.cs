@@ -16,8 +16,11 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired()
             .HasMaxLength(100);
 
+        // Filtered unique index — consistent with SKU and Email pattern
+        // Allows name reuse after soft delete
         builder.HasIndex(c => c.Name)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.HasQueryFilter(c => !c.IsDeleted);
     }

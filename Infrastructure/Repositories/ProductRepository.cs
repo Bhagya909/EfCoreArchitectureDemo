@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Products;
 using Application.Interfaces.Repositories;
 using Application.Models;
@@ -12,27 +12,27 @@ namespace Infrastructure.Repositories
     {
         private readonly RetailDbContext _context;
 
-        // Compiled Query
         private static readonly
-            Func<RetailDbContext, string, IAsyncEnumerable<Product>>
-            _getBySkuCompiledQuery =
+            Func<RetailDbContext, string, IAsyncEnumerable<int?>>
+            _getIdBySkuCompiledQuery =
                 EF.CompileAsyncQuery(
                     (RetailDbContext context, string sku) =>
                         context.Products
                             .AsNoTracking()
-                            .Where(p => p.SKU == sku));
+                            .Where(p => p.SKU == sku)
+                            .Select(p => (int?)p.Id));
 
         public ProductRepository(RetailDbContext context)
         {
             _context = context;
         }
 
-        public async Task<Product?> GetBySkuAsync(string sku)
+        public async Task<int?> GetIdBySkuAsync(string sku)
         {
-            await foreach (var product in
-                _getBySkuCompiledQuery(_context, sku))
+            await foreach (var productId in
+                _getIdBySkuCompiledQuery(_context, sku))
             {
-                return product;
+                return productId;
             }
 
             return null;
@@ -44,52 +44,18 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<PagedResult<Product>>
-            GetPagedAsync(
-                ProductQueryParameters queryParameters)
+        public async Task<Product?> GetByIdWithCategoriesAsync(int id)
         {
-            var query = _context.Products
-                .AsNoTracking();
+            return await _context.Products
+                .Include(p => p.ProductCategories)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
 
-            if (!string.IsNullOrWhiteSpace(
-                queryParameters.SearchTerm))
-            {
-                query = query.Where(p =>
-                    p.Name.Contains(
-                        queryParameters.SearchTerm) ||
-
-                    p.SKU.Contains(
-                        queryParameters.SearchTerm));
-            }
-
-            query = queryParameters.SortBy?.ToLower() switch
-            {
-                "name" => query.OrderBy(p => p.Name),
-
-                "price" => query.OrderBy(p => p.BasePrice),
-
-                _ => query.OrderBy(p => p.Id)
-            };
-
-            var totalCount =
-                await query.CountAsync();
-
-            var items = await query
-                .Skip(
-                    (queryParameters.PageNumber - 1)
-                    * queryParameters.PageSize)
-
-                .Take(queryParameters.PageSize)
-
-                .ToListAsync();
-
-            return new PagedResult<Product>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                PageNumber = queryParameters.PageNumber,
-                PageSize = queryParameters.PageSize
-            };
+        public async Task<Product?> GetByIdReadOnlyAsync(int id)
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task AddAsync(Product product)
@@ -97,52 +63,39 @@ namespace Infrastructure.Repositories
             await _context.Products.AddAsync(product);
         }
 
-        public async Task<
-            PagedResult<ProductResponseDto>>
-            GetPagedProjectedAsync(
-                ProductQueryParameters queryParameters)
+        public async Task<PagedResult<ProductResponseDto>> GetPagedProjectedAsync(
+            ProductQueryParameters queryParameters)
         {
             var query = _context.Products
                 .AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(
-                queryParameters.SearchTerm))
+            if (!string.IsNullOrWhiteSpace(queryParameters.SearchTerm))
             {
                 query = query.Where(p =>
-                    p.Name.Contains(
-                        queryParameters.SearchTerm) ||
-
-                    p.SKU.Contains(
-                        queryParameters.SearchTerm));
+                    p.Name.Contains(queryParameters.SearchTerm) ||
+                    p.SKU.Contains(queryParameters.SearchTerm));
             }
 
             query = queryParameters.SortBy?.ToLower() switch
             {
                 "name" => query.OrderBy(p => p.Name),
-
                 "price" => query.OrderBy(p => p.BasePrice),
-
                 _ => query.OrderBy(p => p.Id)
             };
 
-            var totalCount =
-                await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             var items = await query
-                .Skip(
-                    (queryParameters.PageNumber - 1)
-                    * queryParameters.PageSize)
-
+                .Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
                 .Take(queryParameters.PageSize)
-
                 .Select(p => new ProductResponseDto
                 {
                     Id = p.Id,
                     Name = p.Name,
                     SKU = p.SKU,
-                    BasePrice = p.BasePrice
+                    BasePrice = p.BasePrice,
+                    RowVersion = p.RowVersion
                 })
-
                 .ToListAsync();
 
             return new PagedResult<ProductResponseDto>
@@ -153,41 +106,65 @@ namespace Infrastructure.Repositories
                 PageSize = queryParameters.PageSize
             };
         }
-        public async Task<int> BulkIncreasePricesAsync(
-            decimal percentageIncrease)
+
+        public async Task<int> BulkUpdatePricesAsync(
+            decimal percentageChange, int? categoryId)
         {
-            var multiplier =
-                1 + (percentageIncrease / 100);
+            var multiplier = 1 + (percentageChange / 100);
 
-            return await _context.Products
-                .Where(p => !p.IsDeleted)
-                .ExecuteUpdateAsync(setters =>
-                    setters
-                        .SetProperty(
-                            p => p.BasePrice,
-                            p => p.BasePrice * multiplier)
+            var query = _context.Products
+                .Where(p => !p.IsDeleted);
 
-                        .SetProperty(
-                            p => p.UpdatedAt,
-                            DateTime.UtcNow));
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p =>
+                    p.ProductCategories.Any(pc =>
+                        pc.CategoryId == categoryId.Value));
+            }
+
+            return await query.ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(p => p.BasePrice, p => p.BasePrice * multiplier)
+                    .SetProperty(p => p.UpdatedAt, DateTime.UtcNow));
         }
 
         public async Task<int> BulkArchiveProductsAsync(
-            decimal maxPrice)
+            decimal maxPrice, int? categoryId)
         {
-            return await _context.Products
-                .Where(p =>
-                    !p.IsDeleted &&
-                    p.BasePrice <= maxPrice)
-                .ExecuteUpdateAsync(setters =>
-                    setters
-                        .SetProperty(
-                            p => p.IsDeleted,
-                            true)
+            var query = _context.Products
+                .Where(p => !p.IsDeleted && p.BasePrice <= maxPrice);
 
-                        .SetProperty(
-                            p => p.UpdatedAt,
-                            DateTime.UtcNow));
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p =>
+                    p.ProductCategories.Any(pc =>
+                        pc.CategoryId == categoryId.Value));
+            }
+
+            return await query.ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(p => p.IsDeleted, true)
+                    .SetProperty(p => p.UpdatedAt, DateTime.UtcNow));
+        }
+
+        public async Task<int> BulkRestoreProductsAsync(int? categoryId)
+        {
+            // Global query filter excludes IsDeleted — use IgnoreQueryFilters
+            var query = _context.Products
+                .IgnoreQueryFilters()
+                .Where(p => p.IsDeleted);
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p =>
+                    p.ProductCategories.Any(pc =>
+                        pc.CategoryId == categoryId.Value));
+            }
+
+            return await query.ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(p => p.IsDeleted, false)
+                    .SetProperty(p => p.UpdatedAt, DateTime.UtcNow));
         }
     }
 }

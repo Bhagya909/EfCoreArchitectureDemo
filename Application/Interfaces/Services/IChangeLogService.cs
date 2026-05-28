@@ -1,7 +1,6 @@
-﻿using Application.DTOs.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.Common;
+using Application.DTOs.Logging;
+using Application.Models;
 
 namespace Application.Interfaces.Services
 {
@@ -15,9 +14,15 @@ namespace Application.Interfaces.Services
             string? rawData = null,
             bool requestAiSummary = false,
             Guid? correlationId = null);
-        Task<int> BulkDeleteOldLogsAsync(
-    BulkDeleteOldLogsDto dto);
-
+        Task<ChangeLogDetailResponseDto?> GetByIdAsync(int id);
+        Task<PagedResult<ChangeLogResponseDto>> GetPagedAsync(
+            ChangeLogQueryParameters parameters);
+        Task<PagedResult<ChangeLogResponseDto>> GetPendingAiAsync(
+            int page, int pageSize);
+        Task<PagedResult<ChangeLogResponseDto>> GetAiCompletedAsync(
+            int page, int pageSize);
+        Task<ChangeLogSummaryDto> GetSummaryAsync();
+        Task<int> BulkDeleteOldLogsAsync(BulkDeleteOldLogsDto dto);
         Task<int> BulkDeleteLogsByActionTypeAsync(
             BulkDeleteLogsByActionTypeDto dto);
     }

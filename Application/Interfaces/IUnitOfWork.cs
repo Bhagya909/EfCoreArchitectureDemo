@@ -12,6 +12,8 @@ namespace Application.Interfaces
 
         Task RollbackTransactionAsync();
 
+        void ClearChanges();
+
         Task SaveChangesAsync();
     }
 }

@@ -1,7 +1,7 @@
-﻿using Application.Interfaces;
-using Microsoft.EntityFrameworkCore.Storage;
+using Application.Interfaces;
+using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Infrastructure.Persistence
 {
@@ -44,16 +44,22 @@ namespace Infrastructure.Persistence
             }
         }
 
+        public void ClearChanges()
+        {
+            _context.ChangeTracker.Clear();
+        }
+
         public async Task SaveChangesAsync()
         {
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                throw new Exception(
-                    "A concurrency conflict occurred. Please retry the operation.");
+                throw new ConcurrencyConflictException(
+                    "A concurrency conflict occurred. The record was modified by another request.",
+                    ex);
             }
         }
     }

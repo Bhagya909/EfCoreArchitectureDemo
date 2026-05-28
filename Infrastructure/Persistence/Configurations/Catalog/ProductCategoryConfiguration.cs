@@ -16,6 +16,10 @@ public class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCate
             pc.CategoryId
         });
 
+        builder.HasQueryFilter(pc =>
+            !pc.Product.IsDeleted &&
+            !pc.Category.IsDeleted);
+
         builder.HasOne(pc => pc.Product)
             .WithMany(p => p.ProductCategories)
             .HasForeignKey(pc => pc.ProductId)
