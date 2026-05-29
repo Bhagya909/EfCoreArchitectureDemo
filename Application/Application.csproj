@@ -4,32 +4,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Services\Inventory\**" />
-    <Compile Remove="Services\Logging\**" />
-    <Compile Remove="Services\Orders\**" />
-    <Compile Remove="Services\Payments\**" />
-    <Compile Remove="Services\Products\**" />
-    <EmbeddedResource Remove="Services\Inventory\**" />
-    <EmbeddedResource Remove="Services\Logging\**" />
-    <EmbeddedResource Remove="Services\Orders\**" />
-    <EmbeddedResource Remove="Services\Payments\**" />
-    <EmbeddedResource Remove="Services\Products\**" />
-    <None Remove="Services\Inventory\**" />
-    <None Remove="Services\Logging\**" />
-    <None Remove="Services\Orders\**" />
-    <None Remove="Services\Payments\**" />
-    <None Remove="Services\Products\**" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Interfaces\Logging\" />
   </ItemGroup>
 
 </Project>

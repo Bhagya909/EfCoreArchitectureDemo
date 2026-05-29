@@ -9,6 +9,7 @@ namespace API.Controllers.Orders
     [ApiController]
     [Route("api/orders")]
     [Produces("application/json")]
+    [Tags("Retail Workflow - Orders")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -18,6 +19,9 @@ namespace API.Controllers.Orders
             _orderService = orderService;
         }
 
+        /// <summary>
+        /// Creates a PendingPayment order after validating requested products and available stock.
+        /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,6 +38,9 @@ namespace API.Controllers.Orders
                 order);
         }
 
+        /// <summary>
+        /// Lists orders with pagination and query filters for operations review.
+        /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<OrderResponseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<PagedResult<OrderResponseDto>>> GetAllOrders(
@@ -44,6 +51,9 @@ namespace API.Controllers.Orders
             return Ok(orders);
         }
 
+        /// <summary>
+        /// Gets an order with its line items and current lifecycle status.
+        /// </summary>
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -60,6 +70,9 @@ namespace API.Controllers.Orders
             return Ok(order);
         }
 
+        /// <summary>
+        /// Cancels an order that is still waiting for payment.
+        /// </summary>
         [HttpPut("{id:int}/cancel")]
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -77,6 +90,9 @@ namespace API.Controllers.Orders
             return Ok(order);
         }
 
+        /// <summary>
+        /// Completes a paid order and prevents completion before successful payment.
+        /// </summary>
         [HttpPut("{id:int}/complete")]
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Categories;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -6,7 +6,7 @@ using Application.Interfaces.Services;
 using Application.Mappings;
 using Domain.Entities.Catalog;
 
-namespace Application.Services
+namespace Application.Services.Catalog
 {
     public class CategoryService : ICategoryService
     {

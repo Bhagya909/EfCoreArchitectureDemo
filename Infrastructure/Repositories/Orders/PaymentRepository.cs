@@ -1,10 +1,10 @@
-ï»¿using Application.DTOs.Payments;
+using Application.DTOs.Payments;
 using Application.Interfaces.Repositories;
 using Domain.Entities.Orders;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Orders
 {
     public class PaymentRepository : IPaymentRepository
     {
@@ -51,21 +51,21 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        // Tracked â€” write path only
+        // Tracked — write path only
         public async Task<Payment?> GetByOrderIdAsync(int orderId)
         {
             return await _context.Payments
                 .FirstOrDefaultAsync(p => p.OrderId == orderId);
         }
 
-        // Tracked â€” write path only
+        // Tracked — write path only
         public async Task<Payment?> GetByIdAsync(int id)
         {
             return await _context.Payments
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        // Untracked â€” projected, compiled
+        // Untracked — projected, compiled
         public async Task<PaymentResponseDto?> GetByOrderIdReadOnlyAsync(
             int orderId)
         {
@@ -79,7 +79,7 @@ namespace Infrastructure.Repositories
             return null;
         }
 
-        // Untracked â€” projected, compiled
+        // Untracked — projected, compiled
         public async Task<PaymentResponseDto?> GetByIdReadOnlyAsync(
             int id)
         {

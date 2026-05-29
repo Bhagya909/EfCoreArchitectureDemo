@@ -60,13 +60,18 @@ builder.Services.AddSwaggerGen(options =>
 
     options.DocInclusionPredicate((_, _) => true);
 
-    var xmlFile =
-        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath =
-        Path.Combine(AppContext.BaseDirectory, xmlFile);
+    foreach (var xmlFile in new[]
+    {
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml",
+        "Application.xml"
+    })
+    {
+        var xmlPath =
+            Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-    if (File.Exists(xmlPath))
-        options.IncludeXmlComments(xmlPath);
+        if (File.Exists(xmlPath))
+            options.IncludeXmlComments(xmlPath);
+    }
 });
 
 var app = builder.Build();

@@ -31,8 +31,6 @@ public class RetailWebApplicationFactory
     {
         builder.ConfigureTestServices(services =>
         {
-            // Remove production EF registrations so tests use
-            // only the in-memory SQLite connection.
             var dbContextDescriptors = services
                 .Where(descriptor =>
                     descriptor.ServiceType == typeof(RetailDbContext) ||

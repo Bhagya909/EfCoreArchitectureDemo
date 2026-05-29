@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Products;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -8,7 +8,7 @@ using Application.Models;
 using Application.Validators;
 using Domain.Entities.Catalog;
 
-namespace Application.Services
+namespace Application.Services.Catalog
 {
     public class ProductService : IProductService
     {

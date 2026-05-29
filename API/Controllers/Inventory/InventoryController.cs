@@ -1,6 +1,6 @@
-﻿using Application.DTOs.Inventory;
+﻿using Application.Common;
+using Application.DTOs.Inventory;
 using Application.Interfaces.Services;
-using Domain.Entities.Catalog;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.Inventory;
@@ -8,6 +8,7 @@ namespace API.Controllers.Inventory;
 [ApiController]
 [Route("api/inventory")]
 [Produces("application/json")]
+[Tags("Inventory")]
 public class InventoryController : ControllerBase
 {
     private readonly IInventoryService _inventoryService;
@@ -18,6 +19,9 @@ public class InventoryController : ControllerBase
         _inventoryService = inventoryService;
     }
 
+    /// <summary>
+    /// Adds stock for an existing product and records the inventory movement.
+    /// </summary>
     [HttpPost("add")]
     [ProducesResponseType(typeof(InventoryResponseDto), 201)]
     [ProducesResponseType(400)]
@@ -31,8 +35,11 @@ public class InventoryController : ControllerBase
         return StatusCode(201, inventory);
     }
 
+    /// <summary>
+    /// Checks whether a product has enough stock for an order before checkout.
+    /// </summary>
     [HttpGet("validate")]
-    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(typeof(StockValidationResultDto), 200)]
     [ProducesResponseType(400)]
     public async Task<ActionResult> ValidateStock(
         [FromQuery] int productId,
@@ -62,6 +69,9 @@ public class InventoryController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Gets the current inventory position for a product.
+    /// </summary>
     [HttpGet("{productId:int}")]
     [ProducesResponseType(typeof(InventoryResponseDto), 200)]
     [ProducesResponseType(404)]
@@ -84,9 +94,9 @@ public class InventoryController : ControllerBase
         return Ok(inventory);
     }
 
-    // FIX 4 — removed inaccurate 404 declaration
-    // until global exception middleware is in place
-    // FIX 9 — top validation added
+    /// <summary>
+    /// Lists recent inventory transactions for a product, newest first.
+    /// </summary>
     [HttpGet("transactions/{productId:int}")]
     [ProducesResponseType(
         typeof(List<InventoryTransactionResponseDto>), 200)]
@@ -110,6 +120,9 @@ public class InventoryController : ControllerBase
         return Ok(transactions);
     }
 
+    /// <summary>
+    /// Lists products whose stock is at or below the selected low-stock threshold.
+    /// </summary>
     [HttpGet("low-stock")]
     [ProducesResponseType(
         typeof(List<InventoryResponseDto>), 200)]
@@ -132,6 +145,9 @@ public class InventoryController : ControllerBase
         return Ok(items);
     }
 
+    /// <summary>
+    /// Lists tracked products that currently have zero stock.
+    /// </summary>
     [HttpGet("out-of-stock")]
     [ProducesResponseType(
         typeof(List<InventoryResponseDto>), 200)]
@@ -145,6 +161,9 @@ public class InventoryController : ControllerBase
         return Ok(items);
     }
 
+    /// <summary>
+    /// Returns aggregate inventory metrics for dashboard and operational review.
+    /// </summary>
     [HttpGet("summary")]
     [ProducesResponseType(typeof(InventorySummaryDto), 200)]
     [ProducesResponseType(400)]

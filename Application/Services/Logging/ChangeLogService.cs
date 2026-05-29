@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Logging;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -6,7 +6,7 @@ using Application.Models;
 using Domain.Entities.Logging;
 using Domain.Enums;
 
-namespace Application.Services
+namespace Application.Services.Logging
 {
     public class ChangeLogService : IChangeLogService
     {

@@ -7,6 +7,7 @@ namespace API.Controllers.Orders;
 [ApiController]
 [Route("api/customers")]
 [Produces("application/json")]
+[Tags("Retail Workflow - Customers")]
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;
@@ -17,6 +18,9 @@ public class CustomerController : ControllerBase
         _customerService = customerService;
     }
 
+    /// <summary>
+    /// Lists active customers registered in the retail system.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(
         typeof(List<CustomerResponseDto>), 200)]
@@ -29,6 +33,9 @@ public class CustomerController : ControllerBase
         return Ok(customers);
     }
 
+    /// <summary>
+    /// Gets customer details, including how many orders the customer has placed.
+    /// </summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(
         typeof(CustomerDetailResponseDto), 200)]
@@ -50,6 +57,9 @@ public class CustomerController : ControllerBase
         return Ok(customer);
     }
 
+    /// <summary>
+    /// Creates a customer account using a unique normalized email address.
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(
         typeof(CustomerResponseDto), 201)]
@@ -67,6 +77,9 @@ public class CustomerController : ControllerBase
             customer);
     }
 
+    /// <summary>
+    /// Updates the customer display name while preserving their email identity.
+    /// </summary>
     [HttpPut("{id:int}")]
     [ProducesResponseType(
         typeof(CustomerResponseDto), 200)]
@@ -91,6 +104,9 @@ public class CustomerController : ControllerBase
         return Ok(updated);
     }
 
+    /// <summary>
+    /// Archives a customer with soft delete so historical orders remain available.
+    /// </summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
@@ -110,6 +126,9 @@ public class CustomerController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Lists orders placed by a specific customer.
+    /// </summary>
     [HttpGet("{id:int}/orders")]
     [ProducesResponseType(
         typeof(List<OrderResponseDto>), 200)]

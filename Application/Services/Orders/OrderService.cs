@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Orders;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -8,7 +8,7 @@ using Application.Models;
 using Application.Validators;
 using Domain.Entities.Orders;
 
-namespace Application.Services
+namespace Application.Services.Orders
 {
     public class OrderService : IOrderService
     {

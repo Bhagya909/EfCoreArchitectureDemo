@@ -3,15 +3,16 @@ using Application.Interfaces.Repositories;
 using Domain.Entities.Inventory;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using InventoryEntity = Domain.Entities.Inventory.Inventory;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.Inventory;
 
 public class InventoryRepository : IInventoryRepository
 {
     private readonly RetailDbContext _context;
 
     private static readonly
-        Func<RetailDbContext, int, IAsyncEnumerable<Inventory>>
+        Func<RetailDbContext, int, IAsyncEnumerable<InventoryEntity>>
         _getByProductIdCompiledQuery =
             EF.CompileAsyncQuery(
                 (RetailDbContext context, int productId) =>
@@ -19,7 +20,7 @@ public class InventoryRepository : IInventoryRepository
                         .Where(i => i.ProductId == productId));
 
     private static readonly
-        Func<RetailDbContext, int, IAsyncEnumerable<Inventory>>
+        Func<RetailDbContext, int, IAsyncEnumerable<InventoryEntity>>
         _getByProductIdReadOnlyCompiledQuery =
             EF.CompileAsyncQuery(
                 (RetailDbContext context, int productId) =>
@@ -32,7 +33,7 @@ public class InventoryRepository : IInventoryRepository
         _context = context;
     }
 
-    public async Task<Inventory?> GetByProductIdAsync(
+    public async Task<InventoryEntity?> GetByProductIdAsync(
         int productId)
     {
         await foreach (var inventory in
@@ -45,7 +46,7 @@ public class InventoryRepository : IInventoryRepository
         return null;
     }
 
-    public async Task<Inventory?> GetByProductIdReadOnlyAsync(
+    public async Task<InventoryEntity?> GetByProductIdReadOnlyAsync(
         int productId)
     {
         await foreach (var inventory in
@@ -58,7 +59,7 @@ public class InventoryRepository : IInventoryRepository
         return null;
     }
 
-    public async Task AddAsync(Inventory inventory)
+    public async Task AddAsync(InventoryEntity inventory)
     {
         await _context.Inventories.AddAsync(inventory);
     }

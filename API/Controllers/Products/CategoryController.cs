@@ -8,6 +8,7 @@ namespace API.Controllers.Products
     [ApiController]
     [Route("api/categories")]
     [Produces("application/json")]
+    [Tags("Catalog - Categories")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -17,6 +18,9 @@ namespace API.Controllers.Products
             _categoryService = categoryService;
         }
 
+        /// <summary>
+        /// Creates a product category used to organize and filter catalog items.
+        /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(CategoryResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -33,6 +37,9 @@ namespace API.Controllers.Products
                 category);
         }
 
+        /// <summary>
+        /// Lists all active categories available for product assignment.
+        /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(List<CategoryResponseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<List<CategoryResponseDto>>> GetAll()
@@ -43,6 +50,9 @@ namespace API.Controllers.Products
             return Ok(categories);
         }
 
+        /// <summary>
+        /// Gets category details, including the number of active products assigned to it.
+        /// </summary>
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(CategoryDetailResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -61,6 +71,9 @@ namespace API.Controllers.Products
             return Ok(category);
         }
 
+        /// <summary>
+        /// Renames a category while preserving existing product assignments.
+        /// </summary>
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(CategoryResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -82,6 +95,9 @@ namespace API.Controllers.Products
             return Ok(category);
         }
 
+        /// <summary>
+        /// Archives a category with soft delete so historical product assignments remain auditable.
+        /// </summary>
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -99,6 +115,9 @@ namespace API.Controllers.Products
             return NoContent();
         }
 
+        /// <summary>
+        /// Lists products assigned to a category using paginated read-model projection.
+        /// </summary>
         [HttpGet("{id:int}/products")]
         [ProducesResponseType(typeof(PagedResult<ProductCategoryResponseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -114,8 +133,11 @@ namespace API.Controllers.Products
             return Ok(products);
         }
 
+        /// <summary>
+        /// Archives every active product assigned to the category through a bulk database update.
+        /// </summary>
         [HttpPost("{id:int}/archive-products")]
-        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(OperationResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> ArchiveProducts(int id)
         {

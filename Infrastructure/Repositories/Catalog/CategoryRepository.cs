@@ -1,11 +1,11 @@
-ï»¿using Application.Common;
+using Application.Common;
 using Application.DTOs.Categories;
 using Application.Interfaces.Repositories;
 using Domain.Entities.Catalog;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Catalog
 {
     public class CategoryRepository : ICategoryRepository
     {
@@ -54,14 +54,14 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        // Tracked â€” write path
+        // Tracked — write path
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        // Untracked â€” compiled projected read
+        // Untracked — compiled projected read
         public async Task<CategoryDetailResponseDto?> GetByIdWithProductCountAsync(
             int id)
         {

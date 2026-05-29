@@ -10,6 +10,7 @@ namespace API.Controllers.Products
     [ApiController]
     [Route("api/products")]
     [Produces("application/json")]
+    [Tags("Catalog - Products")]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -23,6 +24,9 @@ namespace API.Controllers.Products
             _categoryService = categoryService;
         }
 
+        /// <summary>
+        /// Lists active products with filtering, sorting, and pagination for catalog browsing.
+        /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<ProductResponseDto>), 200)]
         public async Task<ActionResult<PagedResult<ProductResponseDto>>> GetAll(
@@ -32,6 +36,9 @@ namespace API.Controllers.Products
             return Ok(products);
         }
 
+        /// <summary>
+        /// Gets one active product by identifier, including its concurrency token for safe updates.
+        /// </summary>
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(ProductResponseDto), 200)]
         [ProducesResponseType(404)]
@@ -48,6 +55,9 @@ namespace API.Controllers.Products
             return Ok(product);
         }
 
+        /// <summary>
+        /// Creates a sellable product with a unique SKU and positive base price.
+        /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ProductResponseDto), 201)]
         [ProducesResponseType(400)]
@@ -63,6 +73,9 @@ namespace API.Controllers.Products
                 createdProduct);
         }
 
+        /// <summary>
+        /// Updates product details using RowVersion optimistic concurrency protection.
+        /// </summary>
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(ProductResponseDto), 200)]
         [ProducesResponseType(400)]
@@ -82,6 +95,9 @@ namespace API.Controllers.Products
             return Ok(updated);
         }
 
+        /// <summary>
+        /// Archives a product with soft delete so historical orders and audit records remain intact.
+        /// </summary>
         [HttpDelete("{id:int}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -98,8 +114,11 @@ namespace API.Controllers.Products
             return NoContent();
         }
 
+        /// <summary>
+        /// Applies a set-based percentage price change across products, optionally scoped by category.
+        /// </summary>
         [HttpPost("bulk-price-update")]
-        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(OperationResultDto), 200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult> BulkPriceUpdate(
             [FromBody] BulkPriceUpdateDto dto)
@@ -113,8 +132,11 @@ namespace API.Controllers.Products
             });
         }
 
+        /// <summary>
+        /// Archives matching products in bulk using a database-side update operation.
+        /// </summary>
         [HttpPost("bulk-archive")]
-        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(OperationResultDto), 200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult> BulkArchive(
             [FromBody] BulkArchiveProductsDto dto)
@@ -128,8 +150,11 @@ namespace API.Controllers.Products
             });
         }
 
+        /// <summary>
+        /// Restores archived products in bulk, optionally limited to a category.
+        /// </summary>
         [HttpPost("bulk-restore")]
-        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(OperationResultDto), 200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult> BulkRestore(
             [FromBody] BulkRestoreProductsDto dto)
@@ -143,6 +168,9 @@ namespace API.Controllers.Products
             });
         }
 
+        /// <summary>
+        /// Assigns an existing category to a product, preventing duplicate assignments.
+        /// </summary>
         [HttpPost("{id:int}/categories")]
         [ProducesResponseType(typeof(CategoryResponseDto), 200)]
         [ProducesResponseType(404)]
@@ -162,6 +190,9 @@ namespace API.Controllers.Products
             return Ok(result);
         }
 
+        /// <summary>
+        /// Removes a category assignment from a product without deleting either record.
+        /// </summary>
         [HttpDelete("{id:int}/categories/{categoryId:int}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -181,6 +212,9 @@ namespace API.Controllers.Products
             return NoContent();
         }
 
+        /// <summary>
+        /// Lists the categories currently assigned to a product.
+        /// </summary>
         [HttpGet("{id:int}/categories")]
         [ProducesResponseType(typeof(List<ProductCategoryResponseDto>), 200)]
         [ProducesResponseType(404)]

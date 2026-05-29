@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Payments;
+using Application.DTOs.Payments;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -7,7 +7,7 @@ using Domain.Entities.Orders;
 using Domain.Enums;
 using Domain.Exceptions;
 
-namespace Application.Services
+namespace Application.Services.Orders
 {
     public class PaymentService : IPaymentService
     {

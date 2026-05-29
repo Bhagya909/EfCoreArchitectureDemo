@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.DTOs.Logging;
 using Application.Interfaces.Repositories;
 using Application.Models;
@@ -7,7 +7,7 @@ using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Logging
 {
     public class ChangeLogRepository : IChangeLogRepository
     {

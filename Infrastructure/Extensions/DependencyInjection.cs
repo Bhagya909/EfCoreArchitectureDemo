@@ -2,14 +2,19 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Interfaces.Upgrades;
-using Application.Services;
+using Application.Services.Catalog;
+using Application.Services.Inventory;
+using Application.Services.Logging;
+using Application.Services.Orders;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Configurations.Logging;
 using Infrastructure.Persistence.Interceptors;
-using Infrastructure.Repositories;
+using Infrastructure.Repositories.Catalog;
+using Infrastructure.Repositories.Inventory;
+using Infrastructure.Repositories.Logging;
+using Infrastructure.Repositories.Orders;
 using Infrastructure.Services;
 using Infrastructure.Upgrades;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

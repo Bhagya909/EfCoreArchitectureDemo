@@ -6,7 +6,7 @@ using Domain.Entities.Catalog;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Catalog
 {
     public class ProductRepository : IProductRepository
     {

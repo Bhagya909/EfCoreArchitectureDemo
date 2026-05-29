@@ -7,7 +7,7 @@ using Domain.Enums;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories.Orders
 {
     public class OrderRepository : IOrderRepository
     {

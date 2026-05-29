@@ -4,7 +4,7 @@ using Domain.Entities.Orders;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.Orders;
 
 public class CustomerRepository : ICustomerRepository
 {

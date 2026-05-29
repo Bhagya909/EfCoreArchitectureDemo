@@ -7,6 +7,7 @@ namespace API.Controllers.Payments
     [ApiController]
     [Route("api/payments")]
     [Produces("application/json")]
+    [Tags("Retail Workflow - Payments")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -16,6 +17,9 @@ namespace API.Controllers.Payments
             _paymentService = paymentService;
         }
 
+        /// <summary>
+        /// Completes payment for a pending order, deducts inventory, and moves the order to Paid.
+        /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -33,6 +37,9 @@ namespace API.Controllers.Payments
                 payment);
         }
 
+        /// <summary>
+        /// Gets a payment by payment identifier.
+        /// </summary>
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -51,6 +58,9 @@ namespace API.Controllers.Payments
             return Ok(payment);
         }
 
+        /// <summary>
+        /// Gets the payment associated with an order.
+        /// </summary>
         [HttpGet("order/{orderId:int}")]
         [ProducesResponseType(typeof(PaymentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

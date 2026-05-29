@@ -1,4 +1,4 @@
-ï»¿using Application.DTOs.Inventory;
+using Application.DTOs.Inventory;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -6,8 +6,9 @@ using Application.Mappings;
 using Application.Validators;
 using Domain.Entities.Inventory;
 using Domain.Enums;
+using InventoryEntity = Domain.Entities.Inventory.Inventory;
 
-namespace Application.Services;
+namespace Application.Services.Inventory;
 
 public class InventoryService : IInventoryService
 {
@@ -31,7 +32,7 @@ public class InventoryService : IInventoryService
     public async Task<InventoryResponseDto> AddInventoryAsync(
         CreateInventoryDto dto)
     {
-        // FIX 3 â€” validate DTO before any DB call
+        // FIX 3 — validate DTO before any DB call
         InventoryValidator.ValidateInventory(dto);
 
         var product = await _productRepository
@@ -50,7 +51,7 @@ public class InventoryService : IInventoryService
 
             if (inventory is null)
             {
-                inventory = new Inventory(
+                inventory = new InventoryEntity(
                     dto.ProductId,
                     dto.Quantity);
 
@@ -168,7 +169,7 @@ public class InventoryService : IInventoryService
         return inventory.ToResponseDto(product);
     }
 
-    // FIX 2 â€” pass top to repository
+    // FIX 2 — pass top to repository
     public async Task<List<InventoryTransactionResponseDto>>
         GetTransactionsByProductIdAsync(
             int productId,

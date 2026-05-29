@@ -6,7 +6,7 @@ using Application.Mappings;
 using Application.Validators;
 using Domain.Entities.Orders;
 
-namespace Application.Services;
+namespace Application.Services.Orders;
 
 public class CustomerService : ICustomerService
 {
