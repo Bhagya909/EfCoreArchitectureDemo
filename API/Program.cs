@@ -1,4 +1,5 @@
 using API.Middleware;
+using API.Swagger;
 using Application.Interfaces.Upgrades;
 using Infrastructure.Extensions;
 using Infrastructure.Persistence;
@@ -59,6 +60,9 @@ builder.Services.AddSwaggerGen(options =>
         new[] { api.GroupName ?? api.ActionDescriptor.RouteValues["controller"] });
 
     options.DocInclusionPredicate((_, _) => true);
+    options.OperationFilter<RetailSwaggerOperationFilter>();
+    options.SchemaFilter<RetailSwaggerSchemaFilter>();
+    options.SupportNonNullableReferenceTypes();
 
     foreach (var xmlFile in new[]
     {
@@ -99,6 +103,11 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("v1/swagger.json", "RetailProject API v1");
     options.DocumentTitle = "Retail Project API";
     options.DisplayRequestDuration();
+    options.DisplayOperationId();
+    options.EnableDeepLinking();
+    options.DefaultModelExpandDepth(2);
+    options.DefaultModelsExpandDepth(1);
+    options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
 });
 
 // Root redirect to Swagger

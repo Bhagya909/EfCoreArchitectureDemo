@@ -1,8 +1,23 @@
 # EfCoreArchitectureDemo
 
+## Current Project Snapshot
+
+EfCoreArchitectureDemo is a layered .NET 10 retail management API. The current solution is split into `API`, `Application`, `Domain`, `Infrastructure`, and `RetailProject.Tests`. It demonstrates Clean Architecture, EF Core persistence, SQL Server migrations, optimistic concurrency, transaction-safe retail workflows, audit logging, AI-assisted log enrichment, and API documentation through Swagger.
+
+The main business areas are:
+
+| Area | Current implementation |
+| --- | --- |
+| Catalog | Products, categories, product-category assignment, soft delete, restore, and bulk price/archive operations. |
+| Inventory | Stock creation, stock validation, stock deduction, stock movement history, low-stock/out-of-stock views, and inventory summary. |
+| Customers | Customer creation, update, soft delete, lookup, and customer order history. |
+| Orders | Order creation, listing, lookup, cancellation, payment-state validation, and final completion. |
+| Payments | Payment completion, stock deduction coordination, payment lookup, and payment failure logging. |
+| Observability | Business change logs, automatic EF audit logs, AI summary status, background AI enrichment, and upgrade execution logs. |
+
 ## Architecture
 
-The dependency direction is intentionally one-way: `Domain` contains the business model, `Application` defines use cases and ports around that model, `Infrastructure` implements persistence and external integrations for those ports, `API` hosts HTTP endpoints and composition root wiring, and `Tests` verifies behavior through integration and workflow coverage. Outer layers may depend on inner layers, but inner layers do not depend on outer delivery or persistence details.
+The dependency direction is intentionally one-way: `Domain` contains the business model, `Application` defines use cases and ports around that model, `Infrastructure` implements persistence and external integrations for those ports, `API` hosts HTTP endpoints and composition root wiring, and `RetailProject.Tests` verifies behavior through integration and workflow coverage. Outer layers may depend on inner layers, but inner layers do not depend on outer delivery or persistence details.
 
 | Project | Responsibility |
 | --- | --- |
@@ -13,6 +28,21 @@ The dependency direction is intentionally one-way: `Domain` contains the busines
 | `RetailProject.Tests` | Integration tests for persistence, API workflows, migrations, upgrades, and business behavior. |
 
 EF Core stays in `Infrastructure` because database mapping, migrations, and provider-specific behavior are implementation details. `Application` works through interfaces and DTOs, so it can express business workflows without knowing whether data comes from SQL Server, SQLite tests, or another persistence implementation. It also has no HTTP dependency: controllers translate requests into DTOs, services execute use cases, and responses are mapped back at the boundary.
+
+## API and Swagger
+
+Swagger is enabled by the `API` project through Swashbuckle. The root endpoint redirects to `/swagger`, XML comments are included when generated, and endpoint groups are controlled with controller-level `[Tags(...)]` attributes.
+
+| Swagger group | Route root | Controller |
+| --- | --- | --- |
+| `Catalog - Products` | `/api/products` | `ProductController` |
+| `Catalog - Categories` | `/api/categories` | `CategoryController` |
+| `Inventory` | `/api/inventory` | `InventoryController` |
+| `Customers` | `/api/customers` | `CustomerController` |
+| `Orders` | `/api/orders` | `OrderController` |
+| `Payments` | `/api/payments` | `PaymentController` |
+
+The current API surface includes product CRUD, product category assignment, category CRUD, category product listing, inventory stock operations, customer workflows, order workflows, payment completion, and payment lookup. Errors are normalized by `ExceptionMiddleware` into `ProblemDetails` responses.
 
 ## Database Setup
 
@@ -158,10 +188,10 @@ Compiled queries are used for hot lookups and detail reads: products by SKU, cus
 
 Bulk operations use set-based database commands. `ExecuteUpdateAsync()` powers product price updates, product archive/restore, and category-based product archive operations. `ExecuteDeleteAsync()` powers bulk deletion of old change logs and action-type-specific change logs. These operations avoid loading every affected row into memory.
 
-Repositories project directly to DTOs for read models where possible. That keeps domain entities inside the application/service boundary, returns only fields needed by the API, and prevents EF navigation graphs from leaking into response contracts. Paged reads apply `Skip()` and `Take()` at the database level for products, orders, categories, change logs, AI log views, and inventory transaction views.
+Repositories project directly to DTO read models where the query is purely read-oriented and the response shape is stable. Write paths still load domain entities and apply behavior through entity methods. Paged reads apply `Skip()` and `Take()` at the database level for products, orders, categories, change logs, AI log views, and inventory transaction views.
 
 ## Testing
 
-The test suite has 79 passing tests and 0 failures. Coverage includes write/read validation, category and customer workflows, inventory workflows, payments, transaction behavior, migrations, concurrency, upgrade pipeline behavior, pure domain invariant tests, and API-level workflow conflict tests.
+The test suite covers write/read validation, category and customer workflows, inventory workflows, payments, transaction behavior, migrations, concurrency, upgrade pipeline behavior, pure domain invariant tests, and API-level workflow conflict tests.
 
 Recent coverage additions include order completion workflow tests, API-level `409 Conflict` tests for invalid order completion states, payment rollback and `PAYMENT_FAILED` logging tests, inventory concurrency conflict simulation, pure domain tests for the order state machine and inventory transaction invariants, and upgrade pipeline idempotency for `BackfillAiSummaryStatus`. The upgrade idempotency test also covers the stale change-tracker case by clearing EF tracking after raw SQL setup before running the upgrade runner.

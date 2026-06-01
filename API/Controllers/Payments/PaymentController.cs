@@ -7,7 +7,7 @@ namespace API.Controllers.Payments
     [ApiController]
     [Route("api/payments")]
     [Produces("application/json")]
-    [Tags("Retail Workflow - Payments")]
+    [Tags("Payments")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;

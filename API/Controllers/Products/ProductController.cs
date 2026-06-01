@@ -125,10 +125,10 @@ namespace API.Controllers.Products
         {
             var affectedRows = await _productService.BulkUpdatePricesAsync(dto);
 
-            return Ok(new
+            return Ok(new OperationResultDto
             {
-                message = $"{affectedRows} products price-updated successfully.",
-                affectedRows
+                Message = $"{affectedRows} products price-updated successfully.",
+                AffectedRows = affectedRows
             });
         }
 
@@ -143,10 +143,10 @@ namespace API.Controllers.Products
         {
             var affectedRows = await _productService.BulkArchiveProductsAsync(dto);
 
-            return Ok(new
+            return Ok(new OperationResultDto
             {
-                message = $"{affectedRows} products archived successfully.",
-                affectedRows
+                Message = $"{affectedRows} products archived successfully.",
+                AffectedRows = affectedRows
             });
         }
 
@@ -161,10 +161,10 @@ namespace API.Controllers.Products
         {
             var affectedRows = await _productService.BulkRestoreProductsAsync(dto);
 
-            return Ok(new
+            return Ok(new OperationResultDto
             {
-                message = $"{affectedRows} products restored successfully.",
-                affectedRows
+                Message = $"{affectedRows} products restored successfully.",
+                AffectedRows = affectedRows
             });
         }
 

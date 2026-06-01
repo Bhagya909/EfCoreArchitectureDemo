@@ -9,7 +9,7 @@ namespace API.Controllers.Orders
     [ApiController]
     [Route("api/orders")]
     [Produces("application/json")]
-    [Tags("Retail Workflow - Orders")]
+    [Tags("Orders")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;

@@ -107,6 +107,13 @@ public class InventoryService : IInventoryService
             throw new ArgumentException(
                 "Quantity must be greater than zero.");
 
+        var product = await _productRepository
+            .GetByIdReadOnlyAsync(productId);
+
+        if (product is null)
+            throw new KeyNotFoundException(
+                $"Product with id {productId} was not found.");
+
         var inventory = await _inventoryRepository
             .GetByProductIdReadOnlyAsync(productId);
 

@@ -144,12 +144,12 @@ namespace API.Controllers.Products
             var affectedRows = await _categoryService
                 .ArchiveProductsByCategoryAsync(id);
 
-            return Ok(new
+            return Ok(new OperationResultDto
             {
-                message =
+                Message =
                     $"{affectedRows} products archived " +
                     $"for category {id}.",
-                affectedRows
+                AffectedRows = affectedRows
             });
         }
     }
