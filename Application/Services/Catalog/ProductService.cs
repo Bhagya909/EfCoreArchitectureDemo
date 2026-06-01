@@ -43,8 +43,8 @@ namespace Application.Services.Catalog
             await _productRepository.AddAsync(product);
 
             await _changeLogService.LogAsync(
-                actionType: "PRODUCT_CREATED",
-                entityName: "Product",
+                actionType: LogActionTypes.ProductCreated,
+                entityName: LogEntityNames.Product,
                 referenceId: product.Id,
                 description: $"Product '{product.Name}' created with SKU {product.SKU}.",
                 rawData: $"SKU={product.SKU}; Price={product.BasePrice}");
@@ -102,8 +102,8 @@ namespace Application.Services.Catalog
             product.UpdateDetails(dto.Name, dto.SKU, dto.BasePrice);
 
             await _changeLogService.LogAsync(
-                actionType: "PRODUCT_UPDATED",
-                entityName: "Product",
+                actionType: LogActionTypes.ProductUpdated,
+                entityName: LogEntityNames.Product,
                 referenceId: product.Id,
                 description:
                     $"Product '{product.Name}' updated with SKU {product.SKU} " +
@@ -127,8 +127,8 @@ namespace Application.Services.Catalog
             product.SoftDelete();
 
             await _changeLogService.LogAsync(
-                actionType: "PRODUCT_DELETED",
-                entityName: "Product",
+                actionType: LogActionTypes.ProductDeleted,
+                entityName: LogEntityNames.Product,
                 referenceId: product.Id,
                 description:
                     $"Product '{product.Name}' with SKU {product.SKU} was soft deleted.");
@@ -152,9 +152,7 @@ namespace Application.Services.Catalog
                 throw new ArgumentException(
                     "PercentageChange exceeds allowed operational limit of 200%.");
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var affectedRows = await _productRepository
                     .BulkUpdatePricesAsync(dto.PercentageChange, dto.CategoryId);
@@ -164,8 +162,8 @@ namespace Application.Services.Catalog
                     : "all categories";
 
                 await _changeLogService.LogAsync(
-                    actionType: "BULK_PRICE_UPDATE",
-                    entityName: "Product",
+                    actionType: LogActionTypes.BulkPriceUpdate,
+                    entityName: LogEntityNames.Product,
                     referenceId: null,
                     description:
                         $"{affectedRows} products updated through bulk price operation.",
@@ -174,15 +172,9 @@ namespace Application.Services.Catalog
                     requestAiSummary: true);
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return affectedRows;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<int> BulkArchiveProductsAsync(BulkArchiveProductsDto dto)
@@ -190,9 +182,7 @@ namespace Application.Services.Catalog
             if (dto.MaxPrice < 0)
                 throw new ArgumentException("MaxPrice cannot be negative.");
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var affectedRows = await _productRepository
                     .BulkArchiveProductsAsync(dto.MaxPrice, dto.CategoryId);
@@ -202,8 +192,8 @@ namespace Application.Services.Catalog
                     : "all categories";
 
                 await _changeLogService.LogAsync(
-                    actionType: "BULK_PRODUCT_ARCHIVE",
-                    entityName: "Product",
+                    actionType: LogActionTypes.BulkProductArchive,
+                    entityName: LogEntityNames.Product,
                     referenceId: null,
                     description:
                         $"{affectedRows} products archived through bulk operation.",
@@ -212,22 +202,14 @@ namespace Application.Services.Catalog
                     requestAiSummary: true);
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return affectedRows;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<int> BulkRestoreProductsAsync(BulkRestoreProductsDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var affectedRows = await _productRepository
                     .BulkRestoreProductsAsync(dto.CategoryId);
@@ -237,23 +219,17 @@ namespace Application.Services.Catalog
                     : "all categories";
 
                 await _changeLogService.LogAsync(
-                    actionType: "BULK_RESTORE",
-                    entityName: "Product",
+                    actionType: LogActionTypes.BulkRestore,
+                    entityName: LogEntityNames.Product,
                     referenceId: null,
                     description:
                         $"{affectedRows} products restored through bulk operation.",
                     rawData: $"Scope={scope}");
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return affectedRows;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
     }
 }

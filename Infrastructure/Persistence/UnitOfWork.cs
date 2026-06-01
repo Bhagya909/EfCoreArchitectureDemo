@@ -62,5 +62,40 @@ namespace Infrastructure.Persistence
                     ex);
             }
         }
+
+        public async Task ExecuteInTransactionAsync(Func<Task> action)
+        {
+            await BeginTransactionAsync();
+
+            try
+            {
+                await action();
+                await CommitTransactionAsync();
+            }
+            catch
+            {
+                await RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task<T> ExecuteInTransactionAsync<T>(
+            Func<Task<T>> action)
+        {
+            await BeginTransactionAsync();
+
+            try
+            {
+                var result = await action();
+                await CommitTransactionAsync();
+
+                return result;
+            }
+            catch
+            {
+                await RollbackTransactionAsync();
+                throw;
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Application.DTOs.Orders;
+using Application.Common;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -45,8 +46,8 @@ public class CustomerService : ICustomerService
         await _customerRepository.AddAsync(customer);
 
         await _changeLogService.LogAsync(
-            actionType: "CUSTOMER_CREATED",
-            entityName: "Customer",
+            actionType: LogActionTypes.CustomerCreated,
+            entityName: LogEntityNames.Customer,
             referenceId: customer.Id,
             description:
                 $"Customer '{customer.Name}' " +
@@ -90,8 +91,8 @@ public class CustomerService : ICustomerService
         customer.UpdateName(dto.Name);
 
         await _changeLogService.LogAsync(
-            actionType: "CUSTOMER_UPDATED",
-            entityName: "Customer",
+            actionType: LogActionTypes.CustomerUpdated,
+            entityName: LogEntityNames.Customer,
             referenceId: customer.Id,
             description:
                 $"Customer '{customer.Name}' " +
@@ -115,8 +116,8 @@ public class CustomerService : ICustomerService
         customer.SoftDelete();
 
         await _changeLogService.LogAsync(
-            actionType: "CUSTOMER_DELETED",
-            entityName: "Customer",
+            actionType: LogActionTypes.CustomerDeleted,
+            entityName: LogEntityNames.Customer,
             referenceId: customer.Id,
             description:
                 $"Customer '{customer.Name}' " +

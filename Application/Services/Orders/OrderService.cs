@@ -67,9 +67,7 @@ namespace Application.Services.Orders
                     product.BasePrice));
             }
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var order = new Order(dto.CustomerId, totalAmount);
 
@@ -79,8 +77,8 @@ namespace Application.Services.Orders
                 await _orderRepository.AddAsync(order);
 
                 await _changeLogService.LogAsync(
-                    actionType: "ORDER_CREATED",
-                    entityName: "Order",
+                    actionType: LogActionTypes.OrderCreated,
+                    entityName: LogEntityNames.Order,
                     referenceId: order.Id,
                     description:
                         $"Order created for CustomerId " +
@@ -91,15 +89,9 @@ namespace Application.Services.Orders
                         $"Items={dto.Items.Count}");
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return order.ToResponseDto();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<OrderResponseDto?> GetOrderByIdAsync(int id)
@@ -126,15 +118,13 @@ namespace Application.Services.Orders
             if (order is null)
                 return null;
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 order.Cancel();
 
                 await _changeLogService.LogAsync(
-                    actionType: "ORDER_CANCELLED",
-                    entityName: "Order",
+                    actionType: LogActionTypes.OrderCancelled,
+                    entityName: LogEntityNames.Order,
                     referenceId: order.Id,
                     description:
                         $"Order {order.Id} cancelled " +
@@ -144,15 +134,9 @@ namespace Application.Services.Orders
                         $"CustomerId={order.CustomerId}");
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return order.ToResponseDto();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<OrderResponseDto?> CompleteOrderAsync(int id)
@@ -171,15 +155,13 @@ namespace Application.Services.Orders
                     "Order can only be completed after payment is completed.");
             }
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 order.MarkAsCompleted();
 
                 await _changeLogService.LogAsync(
-                    actionType: "ORDER_COMPLETED",
-                    entityName: "Order",
+                    actionType: LogActionTypes.OrderCompleted,
+                    entityName: LogEntityNames.Order,
                     referenceId: order.Id,
                     description:
                         $"Order {order.Id} completed after successful payment.",
@@ -188,15 +170,9 @@ namespace Application.Services.Orders
                         $"PaymentId={payment.Id}");
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return order.ToResponseDto();
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
     }
 }

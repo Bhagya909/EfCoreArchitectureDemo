@@ -46,8 +46,8 @@ namespace Application.Services.Catalog
             await _categoryRepository.AddAsync(category);
 
             await _changeLogService.LogAsync(
-                actionType: "CATEGORY_CREATED",
-                entityName: "Category",
+                actionType: LogActionTypes.CategoryCreated,
+                entityName: LogEntityNames.Category,
                 referenceId: category.Id,
                 description:
                     $"Category '{category.Name}' created.",
@@ -104,8 +104,8 @@ namespace Application.Services.Catalog
             category.UpdateName(requestedName);
 
             await _changeLogService.LogAsync(
-                actionType: "CATEGORY_UPDATED",
-                entityName: "Category",
+                actionType: LogActionTypes.CategoryUpdated,
+                entityName: LogEntityNames.Category,
                 referenceId: category.Id,
                 description:
                     $"Category '{category.Name}' name updated.",
@@ -128,8 +128,8 @@ namespace Application.Services.Catalog
             category.SoftDelete();
 
             await _changeLogService.LogAsync(
-                actionType: "CATEGORY_DELETED",
-                entityName: "Category",
+                actionType: LogActionTypes.CategoryDeleted,
+                entityName: LogEntityNames.Category,
                 referenceId: category.Id,
                 description:
                     $"Category '{category.Name}' was soft deleted.",
@@ -168,16 +168,14 @@ namespace Application.Services.Catalog
                 throw new KeyNotFoundException(
                     $"Category {categoryId} not found.");
 
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var affectedRows = await _categoryRepository
                     .ArchiveProductsByCategoryAsync(categoryId);
 
                 await _changeLogService.LogAsync(
-                    actionType: "CATEGORY_PRODUCTS_ARCHIVED",
-                    entityName: "Category",
+                    actionType: LogActionTypes.CategoryProductsArchived,
+                    entityName: LogEntityNames.Category,
                     referenceId: categoryId,
                     description:
                         $"{affectedRows} products archived " +
@@ -188,15 +186,9 @@ namespace Application.Services.Catalog
                     requestAiSummary: true);
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
 
                 return affectedRows;
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<CategoryResponseDto?> AssignCategoryToProductAsync(
@@ -234,8 +226,8 @@ namespace Application.Services.Catalog
             product.ProductCategories.Add(productCategory);
 
             await _changeLogService.LogAsync(
-                actionType: "CATEGORY_ASSIGNED",
-                entityName: "ProductCategory",
+                actionType: LogActionTypes.CategoryAssigned,
+                entityName: LogEntityNames.ProductCategory,
                 referenceId: productId,
                 description:
                     $"Category {dto.CategoryId} assigned " +
@@ -276,8 +268,8 @@ namespace Application.Services.Catalog
             product.ProductCategories.Remove(productCategory);
 
             await _changeLogService.LogAsync(
-                actionType: "CATEGORY_REMOVED",
-                entityName: "ProductCategory",
+                actionType: LogActionTypes.CategoryRemoved,
+                entityName: LogEntityNames.ProductCategory,
                 referenceId: productId,
                 description:
                     $"Category {categoryId} removed " +

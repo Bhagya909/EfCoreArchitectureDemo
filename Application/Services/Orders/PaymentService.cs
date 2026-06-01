@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.DTOs.Payments;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -64,8 +65,8 @@ namespace Application.Services.Orders
                 await _paymentRepository.AddAsync(payment);
 
                 await _changeLogService.LogAsync(
-                    actionType: "PAYMENT_COMPLETED",
-                    entityName: "Payment",
+                    actionType: LogActionTypes.PaymentCompleted,
+                    entityName: LogEntityNames.Payment,
                     referenceId: payment.Id,
                     description:
                         $"Payment completed for Order {orderId}. " +
@@ -120,8 +121,8 @@ namespace Application.Services.Orders
             Exception exception)
         {
             await _changeLogService.LogAsync(
-                actionType: "PAYMENT_FAILED",
-                entityName: "Payment",
+                actionType: LogActionTypes.PaymentFailed,
+                entityName: LogEntityNames.Payment,
                 referenceId: orderId,
                 description:
                     $"Payment failed for Order {orderId}: " +

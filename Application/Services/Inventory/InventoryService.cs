@@ -1,4 +1,5 @@
-using Application.DTOs.Inventory;
+ï»¿using Application.DTOs.Inventory;
+using Application.Common;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -32,7 +33,7 @@ public class InventoryService : IInventoryService
     public async Task<InventoryResponseDto> AddInventoryAsync(
         CreateInventoryDto dto)
     {
-        // FIX 3 — validate DTO before any DB call
+        // Validate DTO before any DB call.
         InventoryValidator.ValidateInventory(dto);
 
         var product = await _productRepository
@@ -42,9 +43,7 @@ public class InventoryService : IInventoryService
             throw new InvalidOperationException(
                 "Cannot add inventory for an archived product.");
 
-        await _unitOfWork.BeginTransactionAsync();
-
-        try
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var inventory = await _inventoryRepository
                 .GetByProductIdAsync(dto.ProductId);
@@ -72,8 +71,8 @@ public class InventoryService : IInventoryService
                 .AddTransactionAsync(transaction);
 
             await _changeLogService.LogAsync(
-                actionType: "INVENTORY_ADD",
-                entityName: "Inventory",
+                actionType: LogActionTypes.InventoryAdded,
+                entityName: LogEntityNames.Inventory,
                 referenceId: dto.ProductId,
                 description:
                     $"Stock added for product " +
@@ -84,15 +83,9 @@ public class InventoryService : IInventoryService
                     $"Quantity={dto.Quantity}");
 
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitTransactionAsync();
 
             return inventory.ToResponseDto(product);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync();
-            throw;
-        }
+        });
     }
 
     public async Task<bool> ValidateStockAsync(
@@ -146,8 +139,8 @@ public class InventoryService : IInventoryService
             .AddTransactionAsync(transaction);
 
         await _changeLogService.LogAsync(
-            actionType: "INVENTORY_DEDUCTED",
-            entityName: "Inventory",
+            actionType: LogActionTypes.InventoryDeducted,
+            entityName: LogEntityNames.Inventory,
             referenceId: inventory.ProductId,
             description:
                 $"Inventory deducted for " +
@@ -176,7 +169,7 @@ public class InventoryService : IInventoryService
         return inventory.ToResponseDto(product);
     }
 
-    // FIX 2 — pass top to repository
+    // Pass top to repository.
     public async Task<List<InventoryTransactionResponseDto>>
         GetTransactionsByProductIdAsync(
             int productId,
@@ -220,3 +213,4 @@ public class InventoryService : IInventoryService
             .GetSummaryAsync(lowStockThreshold);
     }
 }
+

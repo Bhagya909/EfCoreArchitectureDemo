@@ -37,8 +37,8 @@ namespace Application.Services.Logging
                 correlationId:
                     correlationId ?? Guid.NewGuid());
 
-            log.SetCategory("BUSINESS");
-            log.SetSeverity("INFO");
+            log.SetCategory(LogDefaults.BusinessCategory);
+            log.SetSeverity(LogDefaults.InfoSeverity);
 
             if (requestAiSummary)
                 log.MarkAiSummaryPending();
@@ -125,8 +125,8 @@ namespace Application.Services.Logging
 
             var protectedActionTypes = new[]
             {
-                "PAYMENT_COMPLETED",
-                "ORDER_CREATED"
+                LogActionTypes.PaymentCompleted,
+                LogActionTypes.OrderCreated
             };
 
             if (protectedActionTypes.Contains(

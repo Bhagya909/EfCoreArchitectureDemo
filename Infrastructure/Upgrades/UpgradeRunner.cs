@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Common;
+using Application.Interfaces;
 using Application.Interfaces.Services;
 using Application.Interfaces.Upgrades;
 using Infrastructure.Persistence;
@@ -38,7 +39,7 @@ namespace Infrastructure.Upgrades
                 var alreadyExecuted =
                     await _context.ChangeLogs
                         .AnyAsync(log =>
-                            log.ActionType == "UPGRADE_EXECUTED"
+                            log.ActionType == LogActionTypes.UpgradeExecuted
                             && log.RawData ==
                             $"Upgrade={upgrade.Name}");
 
@@ -47,15 +48,13 @@ namespace Infrastructure.Upgrades
                     continue;
                 }
 
-                await _unitOfWork.BeginTransactionAsync();
-
-                try
+                await _unitOfWork.ExecuteInTransactionAsync(async () =>
                 {
                     await upgrade.ExecuteAsync();
 
                     await _changeLogService.LogAsync(
-                        actionType: "UPGRADE_EXECUTED",
-                        entityName: "DatabaseUpgrade",
+                        actionType: LogActionTypes.UpgradeExecuted,
+                        entityName: LogEntityNames.DatabaseUpgrade,
                         referenceId: null,
                         description:
                             $"Upgrade '{upgrade.Name}' executed successfully.",
@@ -63,15 +62,7 @@ namespace Infrastructure.Upgrades
                             $"Upgrade={upgrade.Name}");
 
                     await _unitOfWork.SaveChangesAsync();
-
-                    await _unitOfWork.CommitTransactionAsync();
-                }
-                catch
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-
-                    throw;
-                }
+                });
             }
         }
     }
